@@ -1,0 +1,11 @@
+{
+  "BaseDirectory": "C:\\MyPhotos",
+  "MaxRetryAttempts": 5,
+  "CountDown" : 0,
+  "TextOnPicture" : "Robins 20er",
+  "TextOnPictureFont" : "Ink Free",
+  "TextOnPictureFontSize" : 300,
+  "TextOnPictureColor" : "black",
+  "TextPositionFromRight" : 100,
+  "TextPositionFromBottom" : 50
+}

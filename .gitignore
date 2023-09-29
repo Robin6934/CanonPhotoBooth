@@ -10,6 +10,10 @@
 *.userosscache
 *.sln.docstates
 
+#Canon Dlls
+EDSDK.dll
+EdsImage.dll
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
