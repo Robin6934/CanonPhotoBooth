@@ -17,18 +17,13 @@ namespace PhotoBooth
 		public int TextPositionFromBottom { get; set; }
 
 
-
-
-
-
-		public static ConfigLoader LoadFromJsonFile(string filePath)
+		public static ConfigLoader LoadFromJsonFile(string filePath, MainWindow mainWindow)
 		{
 			try
 			{
 				if (!File.Exists(filePath))
 				{
-					MainWindow mainWindow = new MainWindow();
-					mainWindow.ReportError($"Error reading JSON file: {filePath} does not exist",false);
+					mainWindow.ReportError($"Error reading JSON file: {filePath} does not exist");
 					return null;
 				}
 				// Read the JSON file using System.Text.Json

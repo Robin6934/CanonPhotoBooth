@@ -33,15 +33,21 @@ namespace PhotoBooth
 				string sourcePath = CurrentPicturePath;
 				destinationPath = $"{basePath}\\Photos\\{fileName}";
 				AddTextToImage(sourcePath, destinationPath);
-				//movePictureTo(sourcePath, destinationPath);
-			}
-			else if(Option == PictureOptions.Print)
+
+				await RestApiMethods.NewPictureTakenAsync(destinationPath);
+
+                //movePictureTo(sourcePath, destinationPath);
+            }
+            else if(Option == PictureOptions.Print)
 			{
 				// Copy picture to directory
 				string sourcePath = CurrentPicturePath;
 				destinationPath = $"{basePath}\\Photos\\{fileName}";
 				AddTextToImage(sourcePath, destinationPath);
-			    await PrintImageAsync(destinationPath);
+
+                await RestApiMethods.NewPictureTakenAsync(destinationPath);
+
+                await PrintImageAsync(destinationPath);
 			}
 			else if(Option == PictureOptions.Delete)
 			{
@@ -56,7 +62,7 @@ namespace PhotoBooth
 
         }
 
-		private static async Task PrintImageAsync(String imagePath)
+		private static async Task PrintImageAsync(string imagePath)
 		{
 			await Task.Run(() =>
 			{

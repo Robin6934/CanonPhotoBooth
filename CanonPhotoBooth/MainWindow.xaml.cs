@@ -21,7 +21,9 @@ using PhotoBooth;
 using static PhotoBooth.PhotoBoothLib;
 using System.Threading;
 using PhotoBooth;
-using System.Windows.Threading; 
+using System.Windows.Threading;
+using System.IO.Pipes;
+using System.Runtime.CompilerServices;
 
 namespace PhotoBooth
 {
@@ -56,17 +58,16 @@ namespace PhotoBooth
 		int Timer = 0;
 		int CountDown = 4;
 
-		string jsonFilePath = "C:\\Users\\Robin\\Documents\\GitHub\\CanonPhotoBooth\\PhotoBooth\\Resources\\config.json";
+		string jsonFilePath = "C:\\Users\\Robin\\Documents\\GitHub\\CanonPhotoBooth\\CanonPhotoBooth\\Resources\\config.json";
 		public ConfigLoader config { get; private set; }
 
 		DispatcherTimer KeepAliveTimer = new DispatcherTimer();
 
 		private FileSystemWatcher fileWatcher;
 
+        #endregion
 
-		#endregion
-
-		public MainWindow()
+        public MainWindow()
 		{
 			try
 			{
@@ -74,18 +75,19 @@ namespace PhotoBooth
 
 				ReadJson();
 
-				CreateFilePaths(dir);
+                RestApiMethods.Init(dir, this);
+
+                CreateFilePaths(dir);
 				APIHandler = new CanonAPI();
 				APIHandler.CameraAdded += APIHandler_CameraAdded;
 				ErrorHandler.SevereErrorHappened += ErrorHandler_SevereErrorHappened;
 				ErrorHandler.NonSevereErrorHappened += ErrorHandler_NonSevereErrorHappened;
 				SetImageAction = (BitmapImage img) => { bgbrush.ImageSource = img; };
 
-				while (MainCamera == null)
-				{
-					RefreshCamera();
-				}
+				RefreshCamera();
+
 				if (MainCamera == null) return;
+
 				InitTimer();
 
 				InitWindow();
@@ -101,17 +103,18 @@ namespace PhotoBooth
 				MainCamera.SetCapacity(4096, int.MaxValue);
 				StartLV();
 
+				RestApiMethods.StartPolingForPicture(this);
 
-				SetCanvasSize();
+                SetCanvasSize();
 				
 			}
-			catch (DllNotFoundException) { ReportError("Canon DLLs not found!", true); }
-			catch (Exception ex) { ReportError(ex.Message, true); }
+			catch (DllNotFoundException) { ReportError("Canon DLLs not found!"); }
+			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 		private void ReadJson()
 		{
-			config = ConfigLoader.LoadFromJsonFile(jsonFilePath);
+			config = ConfigLoader.LoadFromJsonFile(jsonFilePath, this);
 			CountDown = config.CountDown;
 			dir = config.BaseDirectory;
 		}
@@ -136,7 +139,7 @@ namespace PhotoBooth
 
 				//MainCamera.StartLiveView();
 			}
-			catch (Exception ex) { ReportError(ex.Message, false); }
+			catch (Exception ex) { ReportError(ex.Message); }
 		}
 		
 		private void RefreshCamera()
@@ -146,16 +149,16 @@ namespace PhotoBooth
 			while (!CameraFound)
 			{
 				try { CamList = APIHandler.GetCameraList(); }
-				catch (Exception ex) { ReportError(ex.Message, false); }
+				catch (Exception ex) { ReportError(ex.Message); }
 				if (CamList.Count > 0)
 				{
 					try { MainCamera = CamList[0]; }
-					catch (Exception ex) { ReportError(ex.Message, true); }
+					catch (Exception ex) { ReportError(ex.Message); }
 					CameraFound = true;
 				}
 				if(cnt>1000)
 				{
-					ReportError("No camera found", false);
+					ReportError("No camera found");
 					break;
 				}
 				cnt++;
@@ -216,7 +219,7 @@ namespace PhotoBooth
 			this.Loaded += MainWindow_Loaded;
 		}
 
-		public void InitFilewatcher()
+        public void InitFilewatcher()
 		{
 			fileWatcher = new FileSystemWatcher();
 
@@ -256,7 +259,7 @@ namespace PhotoBooth
 				LVCanvas.Background = bgbrush;
 				MainCamera.StartLiveView();
 			}
-			catch (Exception ex) { ReportError(ex.Message, false); }
+			catch (Exception ex) { ReportError(ex.Message); }
 
 		}
 
@@ -285,7 +288,7 @@ namespace PhotoBooth
 					catch (System.NullReferenceException) { }
 				}
 			}
-			catch (Exception ex) { ReportError(ex.Message, false); }
+			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 		#endregion
@@ -332,7 +335,7 @@ namespace PhotoBooth
 		private void APIHandler_CameraAdded(CanonAPI sender)
 		{
 			try { Dispatcher.Invoke((Action)delegate { RefreshCamera(); }); }
-			catch (Exception ex) { ReportError(ex.Message, false); }
+			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 		private void MainCamera_ProgressChanged(object sender, int progress)
@@ -349,13 +352,18 @@ namespace PhotoBooth
 				sender.DownloadFile(Info, dir + "\\Temp\\");
 				//MainProgressBar.Dispatcher.Invoke((Action)delegate { MainProgressBar.Value = 0; });
 			}
-			catch (Exception ex) { ReportError(ex.Message, false); }
+			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 		#endregion
 
 		#region CameraInteractions
-		private void TriggerPicture()
+		
+		public static void TriggerPictureStatic()
+		{
+            Application.Current.Dispatcher.Invoke(() => ((MainWindow)Application.Current.MainWindow).TriggerPicture());
+        }
+		public void TriggerPicture()
 		{
 			TextBlockCountdown.Visibility = Visibility.Visible;
 			int CountDownTemp = CountDown + 1;
@@ -369,12 +377,10 @@ namespace PhotoBooth
 
 		#region ErrorHandling
 
-		public void ReportError(string message, bool lockdown)
+		public void ReportError(string message)
 		{
 			int errc;
 			lock (ErrLock) { errc = ++ErrCount; }
-
-			//if (lockdown) EnableUI(false);
 
 			if (errc < 4) MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 			else if (errc == 4) MessageBox.Show("Many errors happened!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -384,12 +390,12 @@ namespace PhotoBooth
 
 		private void ErrorHandler_NonSevereErrorHappened(object sender, ErrorCode ex)
 		{
-			ReportError($"SDK Error code: {ex} ({((int)ex).ToString("X")})", false);
+			ReportError($"SDK Error code: {ex} ({((int)ex).ToString("X")})");
 		}
 
 		private void ErrorHandler_SevereErrorHappened(object sender, Exception ex)
 		{
-			ReportError(ex.Message, true);
+			ReportError(ex.Message);
 		}
 
 		#endregion
@@ -420,7 +426,7 @@ namespace PhotoBooth
 
 		}
 
-		private void Window_Closing(object sender, CancelEventArgs e)
+		private async void Window_Closing(object sender, CancelEventArgs e)
 		{
 			try
 			{
@@ -429,8 +435,10 @@ namespace PhotoBooth
 				//Directory.Delete(dir+"\\Temp", true);
 				//Directory.Delete(dir + "\\ShowTemp", true);
 				MainCamera.LiveViewUpdated -= MainCamera_LiveViewUpdated;
+
+				await RestApi.RestApiGet("http://localhost:6969/PhotoBoothApi/Shutdown");
 			}
-			catch (Exception ex) { ReportError(ex.Message, false); }
+			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 		#endregion
