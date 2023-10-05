@@ -13,6 +13,12 @@ namespace PhotoBooth
 {
     internal class RestApi
     {
+
+        /// <summary>
+        /// Make a GET request
+        /// </summary>
+        /// <param name="Url">The URL for the Request</param>
+        /// <returns></returns>
         public static async Task RestApiGet(string Url)
         {
             using (HttpClient client = new HttpClient())
@@ -28,6 +34,11 @@ namespace PhotoBooth
             }
         }
 
+        /// <summary>
+        /// Make a GET request and return the response
+        /// </summary>
+        /// <param name="Url">The URL for the Request</param>
+        /// <returns>Returns the response as HttpResponseMessage</returns>
         public static async Task<HttpResponseMessage> RestApiGetReturn(string Url)
         {
             using (HttpClient client = new HttpClient())
@@ -40,6 +51,12 @@ namespace PhotoBooth
             }
         }
 
+        /// <summary>
+        /// Post a new picture to the Spring Boot API
+        /// </summary>
+        /// <param name="Url">The Url of the Endpoint for the Init</param>
+        /// <param name="photoBoothInit">The DTO with the data to send to the Spring application</param>
+        /// <returns></returns>
         public static async Task RestApiPost(string Url, PhotoBoothInit photoBoothInit)
         {
             using (HttpClient client = new HttpClient())
@@ -67,8 +84,21 @@ namespace PhotoBooth
         }
     }
 
+    /// <summary>
+    /// The DTO for the init
+    /// </summary>
     public record PhotoBoothInit
     {
         public string picturePath { get; set; }
+    }
+
+
+    /// <summary>
+    /// The DTO for the poling
+    /// </summary>
+    public record PolingDTO
+    {
+        public bool triggerPicture { get; set; }
+        public string printPictureName { get; set; }
     }
 }

@@ -10,7 +10,7 @@ using EOSDigital.SDK;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Threading.Tasks;
-
+using System.Printing.IndexedProperties;
 
 namespace PhotoBooth
 {
@@ -62,7 +62,7 @@ namespace PhotoBooth
 
         }
 
-		private static async Task PrintImageAsync(string imagePath)
+		public static async Task PrintImageAsync(string imagePath)
 		{
 			await Task.Run(() =>
 			{

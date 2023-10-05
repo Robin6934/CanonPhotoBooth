@@ -101,9 +101,10 @@ namespace PhotoBooth
 				MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
 
 				MainCamera.SetCapacity(4096, int.MaxValue);
+
 				StartLV();
 
-				RestApiMethods.StartPolingForPicture(this);
+				RestApiMethods.StartPolingForPicture(this, dir);
 
                 SetCanvasSize();
 				
@@ -142,6 +143,10 @@ namespace PhotoBooth
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 		
+
+		/// <summary>
+		/// Refreshes the connected cameras list and selects the first camera.
+		/// </summary>
 		private void RefreshCamera()
 		{
 			int cnt = 0;
@@ -171,11 +176,11 @@ namespace PhotoBooth
 			TriggerPicture();
 		}
 
-		private void OpenSettingsButton_Click(object sender, RoutedEventArgs e)
-		{
-
-		}
-
+		/// <summary>
+		/// To trigger the camera using the Spacebar
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			// Check if the pressed key is the Spacebar
@@ -185,6 +190,11 @@ namespace PhotoBooth
 			}
 		}		
 
+
+		/// <summary>
+		/// Creates an instance of the ImagePreviewWindow class and displays the image.
+		/// </summary>
+		/// <param name="imagePath">the ImagePath of the Image to be shown</param>
 		private void ShowImageViewer(string imagePath)
 		{
 			string imageName= System.IO.Path.GetFileName(imagePath);
@@ -200,9 +210,13 @@ namespace PhotoBooth
 			}));
 		}
 
-		#region Initialisations
+        #region Initialisations
 
-		private void InitWindow()
+
+        /// <summary>
+        /// Sets the window to fullscreen and removes the border, also adds the eventlisteners of the MainWindow
+        /// </summary>
+        private void InitWindow()
 		{
 			this.WindowState = WindowState.Maximized;
 			this.WindowStyle = WindowStyle.None;
@@ -219,6 +233,9 @@ namespace PhotoBooth
 			this.Loaded += MainWindow_Loaded;
 		}
 
+		/// <summary>
+		/// Initialises the Filewatcher to the Temp folder so it gets notified when a new picture is downloaded from the camera
+		/// </summary>
         public void InitFilewatcher()
 		{
 			fileWatcher = new FileSystemWatcher();
@@ -239,6 +256,9 @@ namespace PhotoBooth
 			//fileWatcher.Dispose();
 		}
 
+		/// <summary>
+		/// Initialises the Timer for the Countdown and the KeepAliveTimer so the camera wont go to sleep
+		/// </summary>
 		private void InitTimer()
 		{
 			timer.Tick += Timer_Tick;
@@ -252,6 +272,9 @@ namespace PhotoBooth
 
 		#region LiveView
 
+		/// <summary>
+		/// Start the Live view and set the background of the canvas to the LiveView
+		/// </summary>
 		private void StartLV()
 		{
 			try
@@ -263,6 +286,11 @@ namespace PhotoBooth
 
 		}
 
+		/// <summary>
+		/// Subscribtion to update the Liveview
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="img"></param>
 		private void MainCamera_LiveViewUpdated(Camera sender, Stream img)
 		{
 			try
@@ -295,6 +323,11 @@ namespace PhotoBooth
 
 		#region EventListeners
 
+		/// <summary>
+		/// Eventlistener for the Timer, when the timer hits 0 it takes a picture
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void Timer_Tick(object sender, EventArgs e)
 		{
 
@@ -317,6 +350,11 @@ namespace PhotoBooth
 			MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
 		}
 
+		/// <summary>
+		/// The Eventhandler for the Filewatcher, when a new file is created it will show the image in the ImagePreviewWindow
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void FileCreatedHandler(object sender, FileSystemEventArgs e)
 		{
 			if (e.ChangeType == WatcherChangeTypes.Created)
@@ -332,6 +370,10 @@ namespace PhotoBooth
 			}
 		}
 
+		/// <summary>
+		/// Eventlistener if a new camera gets detected
+		/// </summary>
+		/// <param name="sender"></param>
 		private void APIHandler_CameraAdded(CanonAPI sender)
 		{
 			try { Dispatcher.Invoke((Action)delegate { RefreshCamera(); }); }
@@ -344,6 +386,11 @@ namespace PhotoBooth
 			//catch (Exception ex) { ReportError(ex.Message, false); }
 		}
 
+		/// <summary>
+		/// Eventlistener for when a picture is ready to be downloaded from the camera, the picture will be downloaded to the Temp folder
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="Info"></param>
 		private void MainCamera_DownloadReady(Camera sender, DownloadInfo Info)
 		{
 			try
@@ -359,10 +406,17 @@ namespace PhotoBooth
 
 		#region CameraInteractions
 		
+		/// <summary>
+		/// Trigger the camera to take a picture staticly
+		/// </summary>
 		public static void TriggerPictureStatic()
 		{
             Application.Current.Dispatcher.Invoke(() => ((MainWindow)Application.Current.MainWindow).TriggerPicture());
         }
+
+		/// <summary>
+		/// Triggers the picture, starts the timer and disables the button
+		/// </summary>
 		public void TriggerPicture()
 		{
 			TextBlockCountdown.Visibility = Visibility.Visible;
@@ -377,6 +431,10 @@ namespace PhotoBooth
 
 		#region ErrorHandling
 
+		/// <summary>
+		/// Shows an error message in a MessageBox
+		/// </summary>
+		/// <param name="message">The message that gets shown in the created messagebox</param>
 		public void ReportError(string message)
 		{
 			int errc;
@@ -402,13 +460,20 @@ namespace PhotoBooth
 
 		#region WindowSize and Closing
 
+		/// <summary>
+		/// Eventlistener for when the window size changes, it will update the canvas size
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			// Update the canvas size when the window size changes
 			SetCanvasSize();
-			//SetButtonPosition();
 		}
 
+		/// <summary>
+		/// Sets the Canvas to be in the middle of the screen
+		/// </summary>
 		private void SetCanvasSize()
 		{
 			// Calculate the desired canvas size based on the window's height
@@ -426,6 +491,11 @@ namespace PhotoBooth
 
 		}
 
+		/// <summary>
+		/// Eventlistener for closing of the Mainwindow, it will dispose the camera and tell the Spring application to shutdown
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private async void Window_Closing(object sender, CancelEventArgs e)
 		{
 			try
@@ -442,10 +512,5 @@ namespace PhotoBooth
 		}
 
 		#endregion
-
-		private void Button_Click(object sender, RoutedEventArgs e)
-		{
-			TriggerPicture();
-		}
 	}
 }

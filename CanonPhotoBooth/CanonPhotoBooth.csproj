@@ -9,14 +9,10 @@
 
   <ItemGroup>
     <None Remove="Resources\CameraButton.png" />
-    <None Remove="Resources\GearSymbol.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Resources\CameraButton.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\GearSymbol.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Windows;
+using System.Text.Json;
 
 namespace PhotoBooth
 {
@@ -29,7 +30,7 @@ namespace PhotoBooth
             });
         }
 
-        public static async Task PolingForPictureTrigger(MainWindow mainWindow)
+        public static async Task PolingForPictureTrigger(MainWindow mainWindow, string dir)
         {
             await Task.Run(async () =>
             {
@@ -40,12 +41,24 @@ namespace PhotoBooth
                     
                     string responseString = await response.Content.ReadAsStringAsync();
 
-                    if(responseString == "true")
+                    PolingDTO polingDTO = JsonSerializer.Deserialize<PolingDTO>(responseString);
+
+                    if (polingDTO.triggerPicture == true)
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
                             // This code will run on the UI thread
                             mainWindow.TriggerPicture();
+                        });
+                    }
+
+                    if (polingDTO.printPictureName != "")
+                    {
+                        string ImagePath = dir + "\\Photos\\" + polingDTO.printPictureName;
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            // This code will run on the UI thread
+                            PhotoBoothLib.PrintImageAsync(ImagePath);
                         });
                     }
 
@@ -55,10 +68,10 @@ namespace PhotoBooth
             });
         }
 
-        public static async void StartPolingForPicture(MainWindow mainWindow)
+        public static async void StartPolingForPicture(MainWindow mainWindow, string dir)
         {
             // Perform the GET request asynchronously
-            await PolingForPictureTrigger(mainWindow);
+            await PolingForPictureTrigger(mainWindow, dir);
         }
     }
 }
