@@ -16,7 +16,6 @@ namespace PhotoBooth
 		public int TextPositionFromRight { get; set; }
 		public int TextPositionFromBottom { get; set; }
 
-
 		public static ConfigLoader LoadFromJsonFile(string filePath, MainWindow mainWindow)
 		{
 			try

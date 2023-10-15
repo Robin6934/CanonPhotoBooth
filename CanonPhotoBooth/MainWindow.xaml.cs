@@ -58,7 +58,7 @@ namespace PhotoBooth
 		int Timer = 0;
 		int CountDown = 4;
 
-		string jsonFilePath = "C:\\Users\\Robin\\Documents\\GitHub\\CanonPhotoBooth\\CanonPhotoBooth\\Resources\\config.json";
+		string jsonFilePath = "Resources\\config.json";
 		public ConfigLoader config { get; private set; }
 
 		DispatcherTimer KeepAliveTimer = new DispatcherTimer();

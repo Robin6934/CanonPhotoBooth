@@ -37,7 +37,7 @@ namespace PhotoBooth
                 while(true)
                 {
                     // Perform the GET request asynchronously
-                    HttpResponseMessage response =  await RestApi.RestApiGetReturn("http://localhost:6969/TriggerPicture/Poling");
+                    HttpResponseMessage response =  await RestApi.RestApiGetReturn("http://localhost:6969/PhotoBoothCommunication/Poling");
                     
                     string responseString = await response.Content.ReadAsStringAsync();
 
@@ -55,10 +55,10 @@ namespace PhotoBooth
                     if (polingDTO.printPictureName != "")
                     {
                         string ImagePath = dir + "\\Photos\\" + polingDTO.printPictureName;
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        await Application.Current.Dispatcher.InvokeAsync(async () =>
                         {
                             // This code will run on the UI thread
-                            PhotoBoothLib.PrintImageAsync(ImagePath);
+                            await PhotoBoothLib.PrintImageAsync(ImagePath);
                         });
                     }
 
