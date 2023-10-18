@@ -1,5 +1,4 @@
 {
-  "BaseDirectory": "C:\\MyPhotos",
   "MaxRetryAttempts": 5,
   "CountDown" : 0,
   "TextOnPicture" : "Robins 20er",

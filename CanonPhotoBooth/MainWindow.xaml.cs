@@ -50,7 +50,7 @@ namespace PhotoBooth
 		int PictureCount = 0;
 
 		static string userName = Environment.UserName;
-		string dir = $"C:\\Users\\{userName}\\Pictures\\Photobox";
+		string dir = $"C:\\Users\\{userName}\\Pictures\\PhotoBox";
 
 		string CurrentPictureName = "";
 
@@ -78,6 +78,7 @@ namespace PhotoBooth
                 RestApiMethods.Init(dir, this);
 
                 CreateFilePaths(dir);
+
 				APIHandler = new CanonAPI();
 				APIHandler.CameraAdded += APIHandler_CameraAdded;
 				ErrorHandler.SevereErrorHappened += ErrorHandler_SevereErrorHappened;
@@ -117,7 +118,6 @@ namespace PhotoBooth
 		{
 			config = ConfigLoader.LoadFromJsonFile(jsonFilePath, this);
 			CountDown = config.CountDown;
-			dir = config.BaseDirectory;
 		}
 
 		private void TakePicture()

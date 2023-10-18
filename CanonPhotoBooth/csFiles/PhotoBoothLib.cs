@@ -58,7 +58,7 @@ namespace PhotoBooth
 				movePictureTo(sourcePath, destinationPath);
 			}
 
-			await ImageDownsampler.DownsampleImageAspectRatioAsync(destinationPath, $"{basePath}\\DownScaled\\{fileName}",4);
+			await ImageDownsampler.DownsampleImageAspectRatioAsync(destinationPath, $"{basePath}\\Static\\downscaled_{fileName}",4);
 
         }
 
@@ -155,7 +155,7 @@ namespace PhotoBooth
 
 		public static void CreateFilePaths(string basePath)
 		{
-			string[] paths = { "Photos", "Deleted", "Temp" , "ShowTemp", "DownScaled" };
+			string[] paths = { "Photos", "Deleted", "Temp" , "ShowTemp", "Static" };
 			foreach (string path in paths)
 			{
 				string FullPath = basePath + "\\" + path;
