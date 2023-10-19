@@ -71,11 +71,14 @@ namespace PhotoBooth
 		{
 			try
 			{
-				InitializeComponent();
+
+				RomanToInt("MCMXCIV");
+
+                InitializeComponent();
 
 				ReadJson();
 
-                RestApiMethods.Init(dir, this);
+                RestApiMethods.Init();
 
                 CreateFilePaths(dir);
 
@@ -83,6 +86,7 @@ namespace PhotoBooth
 				APIHandler.CameraAdded += APIHandler_CameraAdded;
 				ErrorHandler.SevereErrorHappened += ErrorHandler_SevereErrorHappened;
 				ErrorHandler.NonSevereErrorHappened += ErrorHandler_NonSevereErrorHappened;
+
 				SetImageAction = (BitmapImage img) => { bgbrush.ImageSource = img; };
 
 				RefreshCamera();
@@ -97,6 +101,7 @@ namespace PhotoBooth
 				MainCamera.DownloadReady += MainCamera_DownloadReady;
 				MainCamera.ProgressChanged += MainCamera_ProgressChanged;
 				MainCamera.LiveViewUpdated += MainCamera_LiveViewUpdated;
+
 				InitFilewatcher();
 
 				MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
@@ -114,7 +119,7 @@ namespace PhotoBooth
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
-		private void ReadJson()
+        private void ReadJson()
 		{
 			config = ConfigLoader.LoadFromJsonFile(jsonFilePath, this);
 			CountDown = config.CountDown;

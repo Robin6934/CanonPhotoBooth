@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Drawing.Printing;
 using System.Threading.Tasks;
 using System.Printing.IndexedProperties;
+using System.ComponentModel;
 
 namespace PhotoBooth
 {
@@ -25,6 +26,8 @@ namespace PhotoBooth
 			string fileName = Path.GetFileName(CurrentPicturePath);
 			string destinationPath = "";
 
+			char[] charArray = fileName.ToCharArray();
+
             basePath = configLoader.BaseDirectory;
 
 			if (Option == PictureOptions.Save)
@@ -33,8 +36,6 @@ namespace PhotoBooth
 				string sourcePath = CurrentPicturePath;
 				destinationPath = $"{basePath}\\Photos\\{fileName}";
 				AddTextToImage(sourcePath, destinationPath);
-
-				await RestApiMethods.NewPictureTakenAsync(destinationPath);
 
                 //movePictureTo(sourcePath, destinationPath);
             }
@@ -45,8 +46,6 @@ namespace PhotoBooth
 				destinationPath = $"{basePath}\\Photos\\{fileName}";
 				AddTextToImage(sourcePath, destinationPath);
 
-                await RestApiMethods.NewPictureTakenAsync(destinationPath);
-
                 await PrintImageAsync(destinationPath);
 			}
 			else if(Option == PictureOptions.Delete)
@@ -55,12 +54,18 @@ namespace PhotoBooth
 
 				string sourcePath = CurrentPicturePath;
 				destinationPath = $"{basePath}\\Deleted\\{fileName}";
-				movePictureTo(sourcePath, destinationPath);
+				CopyPictureTo(sourcePath, destinationPath);
+				return;
+				
 			}
 
-			await ImageDownsampler.DownsampleImageAspectRatioAsync(destinationPath, $"{basePath}\\Static\\downscaled_{fileName}",4);
+			CopyPictureTo(destinationPath, $"{basePath}\\Static\\{fileName}");
+
+			await ImageDownsampler.DownsampleImageAspectRatioAsync(destinationPath, $"{basePath}\\Static\\downscaled{fileName}",4);
 
         }
+
+
 
 		public static async Task PrintImageAsync(string imagePath)
 		{
@@ -79,39 +84,6 @@ namespace PhotoBooth
 				pd.Print();
 			});
 		}
-
-		private void PrintImageWithText(string imagePath, string text, string fontName, float fontSize)
-		{
-			Bitmap image = new Bitmap(imagePath);
-			PrintDocument pd = new PrintDocument();
-			pd.PrintPage += (sender, e) =>
-			{
-				float width = e.PageSettings.PrintableArea.Width;
-				float height = e.PageSettings.PrintableArea.Height;
-
-				// Draw the image
-				e.Graphics.DrawImage(image, 0, 0, height, width);
-
-				// Create a font
-				using (Font font = new Font(fontName, fontSize))
-				{
-					// Create a brush and specify the text color
-					using (Brush brush = new SolidBrush(Color.Black)) // You can change the color here
-					{
-						// Calculate the position to center the text
-						SizeF textSize = e.Graphics.MeasureString(text, font);
-						float x = (width - textSize.Height) -15;
-						float y = (height - textSize.Width) - 15;
-
-						// Draw the text
-						e.Graphics.DrawString(text, font, brush, x, y);
-					}
-				}
-			};
-
-			pd.Print();
-		}
-
 
 		public static void AddTextForPreview(string ImagePath, string SavePath, ConfigLoader configLoader)
 		{
@@ -167,7 +139,7 @@ namespace PhotoBooth
 			}
 		}
 
-		public void movePictureTo(string sourcePath, string destinationPath)
+		public void CopyPictureTo(string sourcePath, string destinationPath)
 		{
 			//WaitForFileToUnlock(sourcePath, TimeSpan.FromSeconds(10));
 			File.Copy(sourcePath, destinationPath);

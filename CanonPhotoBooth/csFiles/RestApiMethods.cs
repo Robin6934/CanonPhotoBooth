@@ -12,22 +12,9 @@ namespace PhotoBooth
     internal class RestApiMethods
     {
 
-        public static async void Init(string dir, MainWindow mainWindow)
+        public static async void Init()
         {
-            PhotoBoothInit photoBoothInit = new PhotoBoothInit();
-
-            photoBoothInit.picturePath = dir+"\\Photos";
-
-            await RestApi.RestApiPost("http://localhost:6969/PhotoBoothApi/Init", photoBoothInit);
-        }
-
-        public static async Task NewPictureTakenAsync(string dir)
-        {
-            await Task.Run(async () =>
-            {
-                // Perform the GET request asynchronously
-                await RestApi.RestApiGet("http://localhost:6969/PhotoBoothApi/newPicture?PicturePath=" + dir);
-            });
+            await RestApi.RestApiGet("http://localhost:6969/PhotoBoothApi/Init");
         }
 
         public static async Task PolingForPictureTrigger(MainWindow mainWindow, string dir)
