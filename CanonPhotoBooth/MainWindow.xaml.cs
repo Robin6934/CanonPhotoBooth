@@ -66,8 +66,6 @@ namespace PhotoBooth
 
 		DispatcherTimer KeepAliveTimer = new DispatcherTimer();
 
-		private FileSystemWatcher fileWatcherNewPicture;
-
 		private FileSystemWatcher fileSystemWatcherConfigFile;
 
         #endregion
@@ -78,7 +76,11 @@ namespace PhotoBooth
 			{
                 InitializeComponent();
 
-				InitJsonReader();
+				config = new ConfigLoader();
+
+                InitJsonReader();
+
+                CountDown = config.countDown;
 
                 RestApiMethods.Init();
 
@@ -235,9 +237,11 @@ namespace PhotoBooth
 		private void ShowImageViewer(string imagePath)
 		{
 			string imageName= System.IO.Path.GetFileName(imagePath);
+
 			string TempPath = dir+"\\ShowTemp\\"+imageName;
+
 			AddTextForPreview(imagePath, TempPath, config);
-			//File.Copy(imagePath,TempPath , true);
+
 			Dispatcher.Invoke((Action)(() =>
 			{
 				PhotoPrintPage imageViewerWindow = new PhotoPrintPage();

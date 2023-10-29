@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System;
 using System.IO;
+using System.Windows;
 
 namespace PhotoBooth
 {
@@ -41,15 +42,15 @@ namespace PhotoBooth
 		/*
         private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
         {
-            ReadJson();
+            ReadJson(e.FullPath);
         }
 
         private void ReadJson(string jsonFilePath)
         {
-            MainWindow.config = LoadFromJsonFile(jsonFilePath, MainWindow);
+            Application.Current.Dispatcher.Invoke(() => ((MainWindow)Application.Current.MainWindow).config = LoadFromJsonFile(jsonFilePath, (MainWindow)Application.Current.MainWindow));
         }
 
-        private void InitJsonReader(string jsonFilePath)
+        public void InitJsonReader(string jsonFilePath)
         {
 
             string absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
@@ -58,7 +59,7 @@ namespace PhotoBooth
 
             absolutePath = System.IO.Path.GetDirectoryName(absolutePath);
 
-            ReadJson();
+            ReadJson(jsonFilePath);
 
             _watcher.Path = absolutePath;
 
@@ -69,6 +70,7 @@ namespace PhotoBooth
             _watcher.NotifyFilter = NotifyFilters.LastWrite;
 
             _watcher.EnableRaisingEvents = true;
-        }*/
+        }
+		*/
     }
 }
