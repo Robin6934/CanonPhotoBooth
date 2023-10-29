@@ -1,10 +1,9 @@
 {
-  "MaxRetryAttempts": 5,
-  "CountDown" : 0,
-  "TextOnPicture" : "Robins 20er",
-  "TextOnPictureFont" : "Ink Free",
-  "TextOnPictureFontSize" : 300,
-  "TextOnPictureColor" : "black",
-  "TextPositionFromRight" : 100,
-  "TextPositionFromBottom" : 50
+    "countDown": 0,
+    "textOnPicture": "Robins 20er",
+    "textOnPictureColor": "black",
+    "textOnPictureFont": "Ink Free",
+    "textOnPictureFontSize": 300,
+    "textPositionFromBottom": 50,
+    "textPositionFromRight": 100
 }

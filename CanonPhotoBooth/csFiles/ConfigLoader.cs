@@ -6,15 +6,14 @@ namespace PhotoBooth
 {
 	public class ConfigLoader
 	{
-		public string BaseDirectory { get; set; }
-		public int MaxRetryAttempts { get; set; }
-		public int CountDown { get; set; }
-		public string TextOnPicture { get; set; }
-		public string TextOnPictureFont { get; set; }
-		public int TextOnPictureFontSize { get; set; }
-		public string TextOnPictureColor { get; set; }
-		public int TextPositionFromRight { get; set; }
-		public int TextPositionFromBottom { get; set; }
+		private FileSystemWatcher _watcher = new FileSystemWatcher();
+        public int countDown { get; set; }
+		public string textOnPicture { get; set; }
+		public string textOnPictureFont { get; set; }
+		public int textOnPictureFontSize { get; set; }
+		public string textOnPictureColor { get; set; }
+		public int textPositionFromRight { get; set; }
+		public int textPositionFromBottom { get; set; }
 
 		public static ConfigLoader LoadFromJsonFile(string filePath, MainWindow mainWindow)
 		{
@@ -38,5 +37,38 @@ namespace PhotoBooth
 				return null;
 			}
 		}
-	}
+
+		/*
+        private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
+        {
+            ReadJson();
+        }
+
+        private void ReadJson(string jsonFilePath)
+        {
+            MainWindow.config = LoadFromJsonFile(jsonFilePath, MainWindow);
+        }
+
+        private void InitJsonReader(string jsonFilePath)
+        {
+
+            string absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
+
+            string FileName = System.IO.Path.GetFileName(absolutePath);
+
+            absolutePath = System.IO.Path.GetDirectoryName(absolutePath);
+
+            ReadJson();
+
+            _watcher.Path = absolutePath;
+
+            _watcher.Filter = FileName;
+
+            _watcher.Changed += SettingsChangesHandler;
+
+            _watcher.NotifyFilter = NotifyFilters.LastWrite;
+
+            _watcher.EnableRaisingEvents = true;
+        }*/
+    }
 }
