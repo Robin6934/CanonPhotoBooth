@@ -28,8 +28,11 @@ namespace PhotoBooth
 
 			char[] charArray = fileName.ToCharArray();
 
-            basePath = configLoader.BaseDirectory;
+			MainWindow mainWindow = new MainWindow();
 
+            basePath = mainWindow.dir;
+
+	
 			if (Option == PictureOptions.Save)
 			{
 				// Copy picture to directory
@@ -100,21 +103,21 @@ namespace PhotoBooth
 
 			// Define text color
 			ColorConverter colorConverter = new ColorConverter();
-			Color color = (Color)colorConverter.ConvertFromString(configLoader.TextOnPictureColor);
+			Color color = (Color)colorConverter.ConvertFromString(configLoader.textOnPictureColor);
 			Brush brush = new SolidBrush(color);
 
 			// Define text font
-			Font font = new Font(configLoader.TextOnPictureFont, configLoader.TextOnPictureFontSize, FontStyle.Regular);
+			Font font = new Font(configLoader.textOnPictureFont, configLoader.textOnPictureFontSize, FontStyle.Regular);
 
 			// Text to display
-			string text = configLoader.TextOnPicture;
+			string text = configLoader.textOnPicture;
 
 			// Measure the size of the text
 			SizeF textSize = graphics.MeasureString(text, font);
 
 			// Define rectangle based on text size
-			float x = bitmap.Width - textSize.Width - configLoader.TextPositionFromRight;
-			float y = bitmap.Height - textSize.Height - configLoader.TextPositionFromBottom;
+			float x = bitmap.Width - textSize.Width - configLoader.textPositionFromRight;
+			float y = bitmap.Height - textSize.Height - configLoader.textPositionFromBottom;
 			RectangleF rectangle = new RectangleF(new PointF(x, y), textSize);
 
 			// Draw text on image

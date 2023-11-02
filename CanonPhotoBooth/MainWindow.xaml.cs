@@ -20,6 +20,7 @@ using EOSDigital.SDK;
 using PhotoBooth;
 using static PhotoBooth.PhotoBoothLib;
 using System.Threading;
+using System.Threading.Tasks;
 using PhotoBooth;
 using System.Windows.Threading;
 using System.IO.Pipes;
@@ -50,7 +51,8 @@ namespace PhotoBooth
 		int PictureCount = 0;
 
 		static string userName = Environment.UserName;
-		string dir = $"C:\\Users\\{userName}\\Pictures\\PhotoBox";
+
+		public string dir = $"C:\\Users\\{userName}\\Pictures\\PhotoBox";
 
 		string CurrentPictureName = "";
 
@@ -59,11 +61,12 @@ namespace PhotoBooth
 		int CountDown = 4;
 
 		string jsonFilePath = "Resources\\config.json";
-		public ConfigLoader config { get; private set; }
+
+        public ConfigLoader config { get; set; }
 
 		DispatcherTimer KeepAliveTimer = new DispatcherTimer();
 
-		private FileSystemWatcher fileWatcher;
+		private FileSystemWatcher fileSystemWatcherConfigFile;
 
         #endregion
 
@@ -71,18 +74,28 @@ namespace PhotoBooth
 		{
 			try
 			{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 30b58d832045aed5b80abd6a0e3f1e511a35b1d1
                 InitializeComponent();
 
-				ReadJson();
+				config = new ConfigLoader();
+
+                InitJsonReader();
+
+                CountDown = config.countDown;
 
                 //RestApiMethods.Init();
 
                 CreateFilePaths(dir);
 
 				APIHandler = new CanonAPI();
+
 				APIHandler.CameraAdded += APIHandler_CameraAdded;
+
 				ErrorHandler.SevereErrorHappened += ErrorHandler_SevereErrorHappened;
+
 				ErrorHandler.NonSevereErrorHappened += ErrorHandler_NonSevereErrorHappened;
 
 				SetImageAction = (BitmapImage img) => { bgbrush.ImageSource = img; };
@@ -96,11 +109,8 @@ namespace PhotoBooth
 				InitWindow();
 				
 				MainCamera.OpenSession();
-				MainCamera.DownloadReady += MainCamera_DownloadReady;
-				MainCamera.ProgressChanged += MainCamera_ProgressChanged;
-				MainCamera.LiveViewUpdated += MainCamera_LiveViewUpdated;
 
-				InitFilewatcher();
+				MainCamera.LiveViewUpdated += MainCamera_LiveViewUpdated;
 
 				MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
 
@@ -117,13 +127,42 @@ namespace PhotoBooth
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
+        private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
+        {
+            ReadJson();
+        }
+
         private void ReadJson()
 		{
 			config = ConfigLoader.LoadFromJsonFile(jsonFilePath, this);
-			CountDown = config.CountDown;
+			CountDown = config.countDown;
 		}
 
-		private void TakePicture()
+        private void InitJsonReader()
+        {
+
+            string absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
+
+			string FileName = System.IO.Path.GetFileName(absolutePath);
+
+			absolutePath = System.IO.Path.GetDirectoryName(absolutePath);
+
+            ReadJson();
+
+            fileSystemWatcherConfigFile = new FileSystemWatcher();
+
+            fileSystemWatcherConfigFile.Path = absolutePath;
+
+			fileSystemWatcherConfigFile.Filter = FileName;
+
+            fileSystemWatcherConfigFile.Changed += SettingsChangesHandler;
+
+            fileSystemWatcherConfigFile.NotifyFilter = NotifyFilters.LastWrite;
+
+            fileSystemWatcherConfigFile.EnableRaisingEvents = true;
+        }
+
+        private void TakePicture()
 		{
 			try
 			{
@@ -176,7 +215,8 @@ namespace PhotoBooth
 		
 		private void TakePictureButton_Click(object sender, RoutedEventArgs e)
 		{
-			TriggerPicture();
+            MainCamera.DownloadReady += MainCamera_DownloadReady;
+            TriggerPicture();
 		}
 
 		/// <summary>
@@ -201,9 +241,11 @@ namespace PhotoBooth
 		private void ShowImageViewer(string imagePath)
 		{
 			string imageName= System.IO.Path.GetFileName(imagePath);
+
 			string TempPath = dir+"\\ShowTemp\\"+imageName;
+
 			AddTextForPreview(imagePath, TempPath, config);
-			//File.Copy(imagePath,TempPath , true);
+
 			Dispatcher.Invoke((Action)(() =>
 			{
 				PhotoPrintPage imageViewerWindow = new PhotoPrintPage();
@@ -211,7 +253,7 @@ namespace PhotoBooth
 				imageViewerWindow.DisplayImage(TempPath);
 				imageViewerWindow.Show();
 			}));
-		}
+        }
 
         #region Initialisations
 
@@ -221,8 +263,8 @@ namespace PhotoBooth
         /// </summary>
         private void InitWindow()
 		{
-			this.WindowState = WindowState.Maximized;
-			this.WindowStyle = WindowStyle.None;
+			//this.WindowState = WindowState.Maximized;
+			//this.WindowStyle = WindowStyle.None;
 			this.ResizeMode = ResizeMode.NoResize;
 			// Subscribe to the PreviewKeyDown event
 			this.PreviewKeyDown += MainWindow_PreviewKeyDown;
@@ -234,29 +276,6 @@ namespace PhotoBooth
 			this.SizeChanged += MainWindow_SizeChanged;
 			this.Closing += Window_Closing;
 			this.Loaded += MainWindow_Loaded;
-		}
-
-		/// <summary>
-		/// Initialises the Filewatcher to the Temp folder so it gets notified when a new picture is downloaded from the camera
-		/// </summary>
-        public void InitFilewatcher()
-		{
-			fileWatcher = new FileSystemWatcher();
-
-			// Set the path to the directory you want to monitor
-			fileWatcher.Path = dir + "\\Temp";
-
-			// Subscribe to the "Created" event for files
-			fileWatcher.Created += FileCreatedHandler;
-
-			// Enable events for files
-			fileWatcher.NotifyFilter = NotifyFilters.FileName;
-
-			// Start monitoring
-			fileWatcher.EnableRaisingEvents = true;
-
-			// Clean up
-			//fileWatcher.Dispose();
 		}
 
 		/// <summary>
@@ -353,40 +372,14 @@ namespace PhotoBooth
 			MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
 		}
 
-		/// <summary>
-		/// The Eventhandler for the Filewatcher, when a new file is created it will show the image in the ImagePreviewWindow
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void FileCreatedHandler(object sender, FileSystemEventArgs e)
-		{
-			if (e.ChangeType == WatcherChangeTypes.Created)
-			{
-
-				// A file was created, which could indicate a copy operation
-				string filePath = e.FullPath;
-				string fileName = e.Name;
-				CurrentPictureName = fileName;
-				WaitForFileToUnlock(filePath, TimeSpan.FromSeconds(10));
-
-				ShowImageViewer(filePath);
-			}
-		}
-
-		/// <summary>
-		/// Eventlistener if a new camera gets detected
-		/// </summary>
-		/// <param name="sender"></param>
-		private void APIHandler_CameraAdded(CanonAPI sender)
+        /// <summary>
+        /// Eventlistener if a new camera gets detected
+        /// </summary>
+        /// <param name="sender"></param>
+        private void APIHandler_CameraAdded(CanonAPI sender)
 		{
 			try { Dispatcher.Invoke((Action)delegate { RefreshCamera(); }); }
 			catch (Exception ex) { ReportError(ex.Message); }
-		}
-
-		private void MainCamera_ProgressChanged(object sender, int progress)
-		{
-			//try { if (progress >= 99) { ShowImageViewer(CurrentPictureName); } }
-			//catch (Exception ex) { ReportError(ex.Message, false); }
 		}
 
 		/// <summary>
@@ -396,12 +389,27 @@ namespace PhotoBooth
 		/// <param name="Info"></param>
 		private void MainCamera_DownloadReady(Camera sender, DownloadInfo Info)
 		{
-			try
+            MainCamera.DownloadReady -= MainCamera_DownloadReady;
+
+            string DownloadDir = dir + "\\Temp\\";
+
+            string fileName = Info.FileName;
+			
+			string TotalPath = System.IO.Path.Combine(DownloadDir, fileName);
+
+            try
 			{
 				//settings.SavePathTextBox.Dispatcher.Invoke((Action)delegate { dir = settings.SavePathTextBox.Text; });
-				sender.DownloadFile(Info, dir + "\\Temp\\");
-				//MainProgressBar.Dispatcher.Invoke((Action)delegate { MainProgressBar.Value = 0; });
-			}
+				sender.DownloadFile(Info, DownloadDir);
+                
+                CurrentPictureName = fileName;
+
+                WaitForFileToUnlock(TotalPath, TimeSpan.FromSeconds(10));
+
+                ShowImageViewer(TotalPath);
+
+                //MainProgressBar.Dispatcher.Invoke((Action)delegate { MainProgressBar.Value = 0; });
+            }
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
@@ -515,5 +523,6 @@ namespace PhotoBooth
 		}
 
 		#endregion
+	
 	}
 }

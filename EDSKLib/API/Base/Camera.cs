@@ -348,6 +348,7 @@ namespace EOSDigital.API
                 try
                 {
                     var DownloadReadyEvent = DownloadReady;
+
                     if (inEvent == ObjectEventID.DirItemRequestTransfer && DownloadReadyEvent != null)
                     {
                         DownloadReadyEvent(this, new DownloadInfo(inRef));

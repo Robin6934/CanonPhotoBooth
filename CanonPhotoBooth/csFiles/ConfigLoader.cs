@@ -1,20 +1,20 @@
 ﻿using System.Text.Json;
 using System;
 using System.IO;
+using System.Windows;
 
 namespace PhotoBooth
 {
 	public class ConfigLoader
 	{
-		public string BaseDirectory { get; set; }
-		public int MaxRetryAttempts { get; set; }
-		public int CountDown { get; set; }
-		public string TextOnPicture { get; set; }
-		public string TextOnPictureFont { get; set; }
-		public int TextOnPictureFontSize { get; set; }
-		public string TextOnPictureColor { get; set; }
-		public int TextPositionFromRight { get; set; }
-		public int TextPositionFromBottom { get; set; }
+		private FileSystemWatcher _watcher = new FileSystemWatcher();
+        public int countDown { get; set; }
+		public string textOnPicture { get; set; }
+		public string textOnPictureFont { get; set; }
+		public int textOnPictureFontSize { get; set; }
+		public string textOnPictureColor { get; set; }
+		public int textPositionFromRight { get; set; }
+		public int textPositionFromBottom { get; set; }
 
 		public static ConfigLoader LoadFromJsonFile(string filePath, MainWindow mainWindow)
 		{
@@ -38,5 +38,39 @@ namespace PhotoBooth
 				return null;
 			}
 		}
-	}
+
+		/*
+        private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
+        {
+            ReadJson(e.FullPath);
+        }
+
+        private void ReadJson(string jsonFilePath)
+        {
+            Application.Current.Dispatcher.Invoke(() => ((MainWindow)Application.Current.MainWindow).config = LoadFromJsonFile(jsonFilePath, (MainWindow)Application.Current.MainWindow));
+        }
+
+        public void InitJsonReader(string jsonFilePath)
+        {
+
+            string absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
+
+            string FileName = System.IO.Path.GetFileName(absolutePath);
+
+            absolutePath = System.IO.Path.GetDirectoryName(absolutePath);
+
+            ReadJson(jsonFilePath);
+
+            _watcher.Path = absolutePath;
+
+            _watcher.Filter = FileName;
+
+            _watcher.Changed += SettingsChangesHandler;
+
+            _watcher.NotifyFilter = NotifyFilters.LastWrite;
+
+            _watcher.EnableRaisingEvents = true;
+        }
+		*/
+    }
 }

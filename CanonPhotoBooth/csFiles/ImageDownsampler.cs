@@ -9,7 +9,6 @@ namespace PhotoBooth
 {
     internal class ImageDownsampler
     {
-
         public static async Task DownsampleImageAspectRatioAsync(string sourcePath, string destinationPath, double divisionFactor)
         {
             await Task.Run(() =>
