@@ -72,13 +72,11 @@ namespace PhotoBooth
 			try
 			{
 
-				RomanToInt("MCMXCIV");
-
                 InitializeComponent();
 
 				ReadJson();
 
-                RestApiMethods.Init();
+                //RestApiMethods.Init();
 
                 CreateFilePaths(dir);
 
@@ -110,7 +108,7 @@ namespace PhotoBooth
 
 				StartLV();
 
-				RestApiMethods.StartPolingForPicture(this, dir);
+				//RestApiMethods.StartPolingForPicture(this, dir);
 
                 SetCanvasSize();
 				
