@@ -19,11 +19,15 @@ namespace PhotoBooth
 	/// <summary>
 	/// Interaction logic for PhotoPrintPage.xaml
 	/// </summary>
-	public partial class PhotoPrintPage : Window
+	public partial class PhotoPrintPage : Window , IDisposable
 	{
 		string ImagePath = "";
+
 		public ConfigLoader configLoader { get; set;}
-		PhotoBoothLib photoBoothLib = new PhotoBoothLib();
+
+        private bool disposed = false;
+
+        PhotoBoothLib photoBoothLib = new PhotoBoothLib();
 		public PhotoPrintPage()
 		{
 			InitializeComponent();
@@ -127,5 +131,48 @@ namespace PhotoBooth
 
 			ImageViewer.SetValue(Canvas.LeftProperty, (this.ActualWidth - canvasWidth) / 2);
 		}
-	}
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // Release managed resources here
+                    // For example, unsubscribe from events and release objects.
+
+                    this.SizeChanged -= PhotoPrintPage_SizeChanged;
+                    // Unsubscribe from other events if necessary.
+
+                    if (ImageViewer.Source is BitmapImage bitmapImage)
+                    {
+                        bitmapImage.StreamSource?.Close();
+                        bitmapImage.StreamSource?.Dispose();
+                        bitmapImage.StreamSource = null;
+                    }
+                    ImageViewer.Source = null;
+
+                    // Dispose of any other disposable objects if used.
+                    // For example, if `photoBoothLib` is IDisposable, call its Dispose method.
+                }
+
+                // Release unmanaged resources here, if any.
+
+                disposed = true;
+            }
+        }
+
+        // Finalizer
+        ~PhotoPrintPage()
+        {
+            Dispose(false);
+        }
+    }
+}
 }

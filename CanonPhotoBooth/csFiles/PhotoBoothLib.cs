@@ -74,17 +74,21 @@ namespace PhotoBooth
 		{
 			await Task.Run(() =>
 			{
+				imagePath = imagePath.Replace("downscaled", "");
 				Bitmap image = new Bitmap(imagePath);
-				PrintDocument pd = new PrintDocument();
-				pd.PrintPage += (sender, e) =>
+				using (PrintDocument pd = new PrintDocument())
 				{
-					float width = e.PageSettings.PrintableArea.Width;
-					float height = e.PageSettings.PrintableArea.Height;
-					e.Graphics.DrawImage(image, 0, 0, height, width);
+                    pd.PrintPage += (sender, e) =>
+                    {
+                        float width = e.PageSettings.PrintableArea.Width;
+                        float height = e.PageSettings.PrintableArea.Height;
+                        e.Graphics.DrawImage(image, 0, 0, height, width);
 
-				};
+                    };
 
-				pd.Print();
+                    pd.Print();
+                }
+				
 			});
 		}
 

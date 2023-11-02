@@ -74,10 +74,7 @@ namespace PhotoBooth
 		{
 			try
 			{
-<<<<<<< HEAD
 
-=======
->>>>>>> 30b58d832045aed5b80abd6a0e3f1e511a35b1d1
                 InitializeComponent();
 
 				config = new ConfigLoader();
@@ -86,7 +83,7 @@ namespace PhotoBooth
 
                 CountDown = config.countDown;
 
-                //RestApiMethods.Init();
+                RestApiMethods.Init();
 
                 CreateFilePaths(dir);
 
@@ -118,7 +115,7 @@ namespace PhotoBooth
 
 				StartLV();
 
-				//RestApiMethods.StartPolingForPicture(this, dir);
+				RestApiMethods.StartPolingForPicture(this, dir);
 
                 SetCanvasSize();
 				
@@ -248,10 +245,13 @@ namespace PhotoBooth
 
 			Dispatcher.Invoke((Action)(() =>
 			{
-				PhotoPrintPage imageViewerWindow = new PhotoPrintPage();
-				imageViewerWindow.configLoader = config;
-				imageViewerWindow.DisplayImage(TempPath);
-				imageViewerWindow.Show();
+				using (PhotoPrintPage imageViewerWindow = new PhotoPrintPage())
+				{
+                    imageViewerWindow.configLoader = config;
+                    imageViewerWindow.DisplayImage(TempPath);
+                    imageViewerWindow.Show();
+                }
+					
 			}));
         }
 
