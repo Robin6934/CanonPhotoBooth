@@ -89,7 +89,7 @@ namespace PhotoBooth
     /// </summary>
     public record PhotoBoothInit
     {
-        public string picturePath { get; set; }
+        public string? picturePath { get; set; }
     }
 
 
@@ -99,6 +99,6 @@ namespace PhotoBooth
     public record PolingDTO
     {
         public bool triggerPicture { get; set; }
-        public string printPictureName { get; set; }
+        public string? printPictureName { get; set; }
     }
 }
