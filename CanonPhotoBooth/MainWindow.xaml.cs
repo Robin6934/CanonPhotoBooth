@@ -263,8 +263,8 @@ namespace PhotoBooth
         /// </summary>
         private void InitWindow()
 		{
-			//this.WindowState = WindowState.Maximized;
-			//this.WindowStyle = WindowStyle.None;
+			this.WindowState = WindowState.Maximized;
+			this.WindowStyle = WindowStyle.None;
 			this.ResizeMode = ResizeMode.NoResize;
 			// Subscribe to the PreviewKeyDown event
 			this.PreviewKeyDown += MainWindow_PreviewKeyDown;
