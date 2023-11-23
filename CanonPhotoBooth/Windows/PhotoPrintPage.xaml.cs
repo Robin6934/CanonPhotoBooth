@@ -19,7 +19,7 @@ namespace PhotoBooth
 	/// <summary>
 	/// Interaction logic for PhotoPrintPage.xaml
 	/// </summary>
-	public partial class PhotoPrintPage : Window , IDisposable
+	public partial class PhotoPrintPage : Window, IDisposable
 	{
 		string ImagePath = "";
 
@@ -86,32 +86,44 @@ namespace PhotoBooth
 			photoBoothLib.configLoader = configLoader;
 			ImagePath = imagePath;
 			this.SizeChanged += PhotoPrintPage_SizeChanged;
-			ImageViewer.Source = new BitmapImage(new Uri(imagePath));
+
+            Uri imageUri = new Uri(imagePath);
+
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+			bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = imageUri;
+            bitmap.EndInit();
+
+            ImageViewer.Source = bitmap;
 			
 			MainCanvas.Loaded += MainCanvas_Loaded;
+            this.Closing += PhotoPrintPage_Closing;
 		}
 
-		private void PhotoPrintPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void PhotoPrintPage_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Dispose();
+        }
+
+        private void PhotoPrintPage_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			SetCanvasSize();
 		}
 
 		private void ButtonSave_Click(object sender, RoutedEventArgs e)
 		{
-
 			photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Save); // Call the method on the instance
 			Close();
+        }
 
-		}
-
-		private void ButtonPrint_Click(object sender, RoutedEventArgs e)
+        private void ButtonPrint_Click(object sender, RoutedEventArgs e)
 		{
-
 			photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Print); // Call the method on the instance
 			Close();
-		}
+        }
 
-		private void ButtonDelete_Click(object sender, RoutedEventArgs e)
+        private void ButtonDelete_Click(object sender, RoutedEventArgs e)
 		{
 			photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Delete); // Call the method on the instance
 			Close();
@@ -173,6 +185,7 @@ namespace PhotoBooth
         {
             Dispose(false);
         }
+
     }
 }
 

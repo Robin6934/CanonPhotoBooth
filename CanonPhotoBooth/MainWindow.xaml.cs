@@ -242,14 +242,16 @@ namespace PhotoBooth
 
 			AddTextForPreview(imagePath, TempPath, config);
 
+			WaitForFileToUnlock(TempPath, TimeSpan.FromSeconds(10));
+
 			Dispatcher.Invoke((Action)(() =>
 			{
-				using (PhotoPrintPage imageViewerWindow = new PhotoPrintPage())
-				{
-                    imageViewerWindow.configLoader = config;
-                    imageViewerWindow.DisplayImage(TempPath);
-                    imageViewerWindow.Show();
-                }
+				PhotoPrintPage imageViewerWindow = new PhotoPrintPage();
+				
+                imageViewerWindow.configLoader = config;
+                imageViewerWindow.DisplayImage(TempPath);
+                imageViewerWindow.Show();
+                
 					
 			}));
         }

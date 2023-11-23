@@ -146,7 +146,7 @@ namespace PhotoBooth
 			}
 		}
 
-		public void CopyPictureTo(string sourcePath, string destinationPath)
+		public static void CopyPictureTo(string sourcePath, string destinationPath)
 		{
 			//WaitForFileToUnlock(sourcePath, TimeSpan.FromSeconds(10));
 			File.Copy(sourcePath, destinationPath);

@@ -7,6 +7,6 @@
         mc:Ignorable="d"
         Title="PhotoPrintPage" Height="1066" Width="1600">
     <Canvas x:Name="MainCanvas">
-        <Image x:Name="ImageViewer" Stretch="UniformToFill" Width="1600" Height="1066" />
+        <Image x:Name="ImageViewer" Stretch="UniformToFill" Width="1600" Height="1066"/>
      </Canvas>
 </Window>
