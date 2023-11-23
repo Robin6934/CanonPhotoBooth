@@ -175,4 +175,4 @@ namespace PhotoBooth
         }
     }
 }
-}
+

@@ -21,10 +21,10 @@ using PhotoBooth;
 using static PhotoBooth.PhotoBoothLib;
 using System.Threading;
 using System.Threading.Tasks;
-using PhotoBooth;
 using System.Windows.Threading;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
+
 
 namespace PhotoBooth
 {
@@ -68,7 +68,7 @@ namespace PhotoBooth
 
 		private FileSystemWatcher fileSystemWatcherConfigFile;
 
-        #endregion
+		#endregion
 
         public MainWindow()
 		{
@@ -117,8 +117,7 @@ namespace PhotoBooth
 
 				RestApiMethods.StartPolingForPicture(this, dir);
 
-                SetCanvasSize();
-				
+                SetCanvasSize();				
 			}
 			catch (DllNotFoundException) { ReportError("Canon DLLs not found!"); }
 			catch (Exception ex) { ReportError(ex.Message); }
@@ -319,11 +318,6 @@ namespace PhotoBooth
 			{
 				using (WrapStream s = new WrapStream(img))
 				{
-					//TransformedBitmap mirroredBitmap = new TransformedBitmap();
-					//mirroredBitmap.BeginInit();
-					//ScaleTransform mirrorScale = new ScaleTransform(-1, 1);
-					//mirroredBitmap.Transform = mirrorScale;
-
 					img.Position = 0;
 					BitmapImage EvfImage = new BitmapImage();
 					EvfImage.BeginInit();
@@ -331,15 +325,13 @@ namespace PhotoBooth
 					EvfImage.CacheOption = BitmapCacheOption.OnLoad;
 					EvfImage.EndInit();
 					EvfImage.Freeze();
-					try
-					{
-						Application.Current.Dispatcher.BeginInvoke(SetImageAction, EvfImage);
-					}
-					catch (System.NullReferenceException) { }
+
+					Application.Current.Dispatcher.BeginInvoke(SetImageAction, EvfImage);
 				}
 			}
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
+
 
 		#endregion
 
