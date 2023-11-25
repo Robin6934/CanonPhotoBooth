@@ -23,7 +23,7 @@ namespace EOSDigital.API
         /// <summary>
         /// The SDK camera added delegate
         /// </summary>
-        protected static SDKCameraAddedHandler CameraAddedEvent;
+        protected static SDKCameraAddedHandler? CameraAddedEvent;
 
         private ErrorCode CanonAPI_CameraAddedEvent(IntPtr inContext)
         {
@@ -45,7 +45,7 @@ namespace EOSDigital.API
         /// <summary>
         /// The main SDK thread where the event loop runs
         /// </summary>
-        protected static STAThread MainThread;
+        protected static STAThread? MainThread;
 
         /// <summary>
         /// Field for the public <see cref="IsSDKInitialized"/> property
@@ -88,7 +88,9 @@ namespace EOSDigital.API
         /// </summary>
         /// <param name="useCallingThread">If true, the calling thread will be used as SDK main thread;
         /// if false, a separate thread will be created</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public CanonAPI(bool useCallingThread)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             try
             {

@@ -9,10 +9,10 @@ namespace PhotoBooth
 	{
 		private FileSystemWatcher _watcher = new FileSystemWatcher();
         public int countDown { get; set; }
-		public string textOnPicture { get; set; }
-		public string textOnPictureFont { get; set; }
+		public string? textOnPicture { get; set; }
+		public string? textOnPictureFont { get; set; }
 		public int textOnPictureFontSize { get; set; }
-		public string textOnPictureColor { get; set; }
+		public string? textOnPictureColor { get; set; }
 		public int textPositionFromRight { get; set; }
 		public int textPositionFromBottom { get; set; }
 
