@@ -74,7 +74,7 @@ namespace PhotoBooth
 		{
 			try
 			{
-
+				
                 InitializeComponent();
 
 				config = new ConfigLoader();
@@ -122,6 +122,11 @@ namespace PhotoBooth
 			catch (DllNotFoundException) { ReportError("Canon DLLs not found!"); }
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
+
+        private void MainWindow_Loaded1(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
         {
@@ -211,7 +216,6 @@ namespace PhotoBooth
 		
 		private void TakePictureButton_Click(object sender, RoutedEventArgs e)
 		{
-            MainCamera.DownloadReady += MainCamera_DownloadReady;
             TriggerPicture();
 		}
 
@@ -289,6 +293,7 @@ namespace PhotoBooth
 
 			KeepAliveTimer.Tick += KeepAliveTimer_Tick;
 			KeepAliveTimer.Interval = TimeSpan.FromMinutes(1);
+			KeepAliveTimer.Start();
 		}
 
 		#endregion
@@ -363,8 +368,8 @@ namespace PhotoBooth
 
 		private void KeepAliveTimer_Tick(object sender, EventArgs e)
 		{
-			MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
-		}
+            MainCamera.SendCommand(CameraCommand.DriveLensEvf, (int)DriveLens.Near1);
+        }
 
         /// <summary>
         /// Eventlistener if a new camera gets detected
@@ -424,7 +429,8 @@ namespace PhotoBooth
 		/// </summary>
 		public void TriggerPicture()
 		{
-			TextBlockCountdown.Visibility = Visibility.Visible;
+            MainCamera.DownloadReady += MainCamera_DownloadReady;
+            TextBlockCountdown.Visibility = Visibility.Visible;
 			int CountDownTemp = CountDown + 1;
 			TextBlockCountdown.Text = CountDownTemp.ToString();
 			Timer = CountDown;
@@ -493,8 +499,9 @@ namespace PhotoBooth
 
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
+            
 
-		}
+        }
 
 		/// <summary>
 		/// Eventlistener for closing of the Mainwindow, it will dispose the camera and tell the Spring application to shutdown

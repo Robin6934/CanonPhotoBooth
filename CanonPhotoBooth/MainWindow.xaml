@@ -41,7 +41,7 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
                                     <Grid>
-                                        <Image Source="./Resources/CameraButton.png" Stretch="Uniform"/>
+                                        <Image Source="/Resources/CameraButton.png" Stretch="Uniform"/>
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Grid>
                                 </ControlTemplate>
