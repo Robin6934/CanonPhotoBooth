@@ -19,16 +19,21 @@ namespace PhotoBooth
 	{
 		string userName = Environment.UserName;
 		string basePath = "";
-		public ConfigLoader configLoader { get; set; }  
+		public ConfigLoader? configLoader { get; set; }
+		public MainWindow? mainWindow;
 
-		public async void doPhotoboxThings(string CurrentPicturePath, PictureOptions Option)
+		public PhotoBoothLib(MainWindow mainWindow) 
+		{
+			this.mainWindow = mainWindow;
+		}
+
+
+        public async void doPhotoboxThings(string CurrentPicturePath, PictureOptions Option)
 		{
 			string fileName = Path.GetFileName(CurrentPicturePath);
 			string destinationPath = "";
 
 			char[] charArray = fileName.ToCharArray();
-
-			MainWindow mainWindow = new MainWindow();
 
             basePath = mainWindow.dir;
 
@@ -92,9 +97,9 @@ namespace PhotoBooth
 			});
 		}
 
-		public static void AddTextForPreview(string ImagePath, string SavePath, ConfigLoader configLoader)
+		public static void AddTextForPreview(string ImagePath, string SavePath, ConfigLoader configLoader, MainWindow mainWindow)
 		{
-			PhotoBoothLib photoBoothLib = new PhotoBoothLib();
+			PhotoBoothLib photoBoothLib = new PhotoBoothLib(mainWindow);
 			photoBoothLib.configLoader = configLoader;
 			photoBoothLib.AddTextToImage(ImagePath, SavePath);
 		}
@@ -149,7 +154,7 @@ namespace PhotoBooth
 		public static void CopyPictureTo(string sourcePath, string destinationPath)
 		{
 			//WaitForFileToUnlock(sourcePath, TimeSpan.FromSeconds(10));
-			File.Copy(sourcePath, destinationPath);
+			File.Copy(sourcePath, destinationPath, true);
 		}
 
 		public enum PictureOptions: Int32
@@ -214,6 +219,5 @@ namespace PhotoBooth
 				Thread.Sleep(100);
 			}
 		}
-
 	}
 }

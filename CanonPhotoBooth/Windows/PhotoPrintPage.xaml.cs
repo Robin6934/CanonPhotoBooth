@@ -23,18 +23,22 @@ namespace PhotoBooth
 	{
 		string ImagePath = "";
 
-		public ConfigLoader configLoader { get; set;}
+		public ConfigLoader? configLoader { get; set;}
 
         private bool disposed = false;
 
-        PhotoBoothLib photoBoothLib = new PhotoBoothLib();
-		public PhotoPrintPage()
+		private MainWindow mainWindow;
+
+		PhotoBoothLib photoBoothLib;
+
+		public PhotoPrintPage(MainWindow mainWindow)
 		{
 			InitializeComponent();
+			this.mainWindow = mainWindow;
 			this.WindowStyle = WindowStyle.None;
 			this.WindowState = WindowState.Maximized;
-
-		}
+            photoBoothLib = new PhotoBoothLib(mainWindow);
+        }
 
 		private void MainCanvas_Loaded(object sender, RoutedEventArgs e)
 		{

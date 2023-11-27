@@ -68,6 +68,12 @@ namespace PhotoBooth
 
 		private FileSystemWatcher fileSystemWatcherConfigFile;
 
+		private bool SecondTick = false;
+
+		BitmapImage CheckColorImage;
+
+		bool saveImageForColorcheck = false;
+
 		#endregion
 
         public MainWindow()
@@ -167,21 +173,7 @@ namespace PhotoBooth
 		{
 			try
 			{
-
-				//MainCamera.StopLiveView();
-
-				MainCamera.SendCommand(CameraCommand.DoEvfAf, (int)EvfAFMode.Quick);
-
-				//MainCamera.SendCommand(CameraCommand.DoEvfAf, (int)AFMode.OneShot);
-
-
-				//CanonSDK.GetPropertyData(MainCamera.Reference, PropertyID.FocusInfo, 0,out FocInfo);
-
-				//SaveFocusInfo(FocInfo);
-
-				MainCamera.TakePhotoAsync();
-
-				//MainCamera.StartLiveView();
+                MainCamera.TakePhotoAsync();
 			}
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
@@ -216,15 +208,17 @@ namespace PhotoBooth
 		
 		private void TakePictureButton_Click(object sender, RoutedEventArgs e)
 		{
-            TriggerPicture();
-		}
+			Debug.WriteLine("TakePictureButton Pressed");
 
-		/// <summary>
-		/// To trigger the camera using the Spacebar
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+            TriggerPicture();
+        }
+
+        /// <summary>
+        /// To trigger the camera using the Spacebar
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
 		{
 			// Check if the pressed key is the Spacebar
 			if (e.Key == Key.Space)
@@ -244,13 +238,13 @@ namespace PhotoBooth
 
 			string TempPath = dir+"\\ShowTemp\\"+imageName;
 
-			AddTextForPreview(imagePath, TempPath, config);
+			AddTextForPreview(imagePath, TempPath, config, this);
 
 			WaitForFileToUnlock(TempPath, TimeSpan.FromSeconds(10));
 
 			Dispatcher.Invoke((Action)(() =>
 			{
-				PhotoPrintPage imageViewerWindow = new PhotoPrintPage();
+				PhotoPrintPage imageViewerWindow = new PhotoPrintPage(this);
 				
                 imageViewerWindow.configLoader = config;
                 imageViewerWindow.DisplayImage(TempPath);
@@ -268,9 +262,9 @@ namespace PhotoBooth
         /// </summary>
         private void InitWindow()
 		{
-			this.WindowState = WindowState.Maximized;
-			this.WindowStyle = WindowStyle.None;
-			this.ResizeMode = ResizeMode.NoResize;
+			//this.WindowState = WindowState.Maximized;
+			//this.WindowStyle = WindowStyle.None;
+			//this.ResizeMode = ResizeMode.NoResize;
 			// Subscribe to the PreviewKeyDown event
 			this.PreviewKeyDown += MainWindow_PreviewKeyDown;
 
@@ -333,6 +327,12 @@ namespace PhotoBooth
 					EvfImage.EndInit();
 					EvfImage.Freeze();
 
+					if(saveImageForColorcheck) 
+					{ 
+						CheckColorImage = EvfImage; 
+						saveImageForColorcheck = false;
+					}
+
 					Application.Current.Dispatcher.BeginInvoke(SetImageAction, EvfImage);
 				}
 			}
@@ -354,21 +354,31 @@ namespace PhotoBooth
 
 			if (Timer == 0)
 			{
-				TextBlockCountdown.Visibility = Visibility.Hidden;
-				timer.Stop();
+                TextBlockCountdown.Visibility = Visibility.Hidden;
+                timer.Stop();
 				TakePicture();
 				TakePictureButton.Click += TakePictureButton_Click;
-			}
-			else
-			{
-				TextBlockCountdown.Text = Timer.ToString();
-				Timer--;
-			}
+				KeepAliveTimer.Start();
+				return;
+            }
+			
+			TextBlockCountdown.Text = Timer.ToString();
+			Timer--;
+
 		}
 
 		private void KeepAliveTimer_Tick(object sender, EventArgs e)
 		{
-            MainCamera.SendCommand(CameraCommand.DriveLensEvf, (int)DriveLens.Near1);
+			if (SecondTick)
+            {
+                MainCamera.SendCommand(CameraCommand.DriveLensEvf, (int)DriveLens.Near1);
+            }
+			else
+			{
+                MainCamera.SendCommand(CameraCommand.DriveLensEvf, (int)DriveLens.Far1);
+            }
+            Debug.WriteLine("Keepalive Timer Ticked " + (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds);
+            SecondTick ^= true;
         }
 
         /// <summary>
@@ -427,9 +437,17 @@ namespace PhotoBooth
 		/// <summary>
 		/// Triggers the picture, starts the timer and disables the button
 		/// </summary>
-		public void TriggerPicture()
+		public async void TriggerPicture()
 		{
+            saveImageForColorcheck = true;
+            KeepAliveTimer.Stop();
             MainCamera.DownloadReady += MainCamera_DownloadReady;
+
+			await Task.Delay(100);
+
+			if(BitmapImageLib.BitmapImageIsTooDark(CheckColorImage)){ TextBlockCountdown.Foreground = Brushes.White; }
+			else { TextBlockCountdown.Foreground = Brushes.Black; }
+
             TextBlockCountdown.Visibility = Visibility.Visible;
 			int CountDownTemp = CountDown + 1;
 			TextBlockCountdown.Text = CountDownTemp.ToString();
@@ -500,7 +518,6 @@ namespace PhotoBooth
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
             
-
         }
 
 		/// <summary>
