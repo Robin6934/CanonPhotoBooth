@@ -1,4 +1,4 @@
-﻿//#define Dev
+﻿#define Dev
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -209,6 +209,8 @@ namespace PhotoBooth
 		
 		private void TakePictureButton_Click(object sender, RoutedEventArgs e)
 		{
+			BorderText.Visibility = Visibility.Hidden;
+
 			Debug.WriteLine("TakePictureButton Pressed");
 
             TriggerPicture();
@@ -419,9 +421,14 @@ namespace PhotoBooth
 
                 ShowImageViewer(TotalPath);
 
+				Dispatcher.Invoke(new Action(() =>
+				{
+					BorderText.Visibility = Visibility.Visible;
+				}));
+
                 //MainProgressBar.Dispatcher.Invoke((Action)delegate { MainProgressBar.Value = 0; });
             }
-			catch (Exception ex) { ReportError(ex.Message); }
+            catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 		#endregion
@@ -543,7 +550,6 @@ namespace PhotoBooth
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
-		#endregion
-	
-	}
+        #endregion
+    }
 }

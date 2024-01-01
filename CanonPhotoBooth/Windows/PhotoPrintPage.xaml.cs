@@ -42,50 +42,72 @@ namespace PhotoBooth
 
 		private void MainCanvas_Loaded(object sender, RoutedEventArgs e)
 		{
-			// Create the Print button
-			Button buttonPrint = new Button();
-			buttonPrint.Name = "ButtonPrint";
-			buttonPrint.Content = "Print";
-			buttonPrint.Height = 40;
-			buttonPrint.Width = 50;
-			buttonPrint.FontSize = 20;
-			buttonPrint.Click += ButtonPrint_Click;
-			Canvas.SetLeft(buttonPrint, (MainCanvas.ActualWidth - buttonPrint.Width) / 2); // Centered
-			Canvas.SetBottom(buttonPrint, 50);
+            // Create the Print button
+            Button buttonPrint = new Button();
+            buttonPrint.Name = "ButtonPrint";
+            buttonPrint.Content = "Print";
+            buttonPrint.Height = 150;
+            buttonPrint.Width = 150;
+            buttonPrint.FontSize = 40;
+            buttonPrint.Click += ButtonPrint_Click;
+            Canvas.SetLeft(buttonPrint, (MainCanvas.ActualWidth - buttonPrint.Width) / 2); // Centered
+            Canvas.SetBottom(buttonPrint, 50);
+            buttonPrint.SetValue(Button.TemplateProperty, GetRoundButtonTemplate(buttonPrint));
+
+            // Create the Save button
+            Button buttonSave = new Button();
+            buttonSave.Name = "ButtonSave";
+            buttonSave.Content = "Save";
+            buttonSave.Height = 150;
+            buttonSave.Width = 150;
+            buttonSave.FontSize = 40;
+            buttonSave.Click += ButtonSave_Click;
+            Canvas.SetLeft(buttonSave, (MainCanvas.ActualWidth - buttonPrint.Width) / 2 - 180); // Centered
+            Canvas.SetBottom(buttonSave, 50);
+            buttonSave.SetValue(Button.TemplateProperty, GetRoundButtonTemplate(buttonSave));
+
+            // Create the Delete button
+            Button buttonDelete = new Button();
+            buttonDelete.Name = "ButtonDelete";
+            buttonDelete.Content = "Delete";
+            buttonDelete.Height = 150;
+            buttonDelete.Width = 150;
+            buttonDelete.FontSize = 40;
+            buttonDelete.Click += ButtonDelete_Click;
+            Canvas.SetLeft(buttonDelete, (MainCanvas.ActualWidth - buttonPrint.Width) / 2 + 180); // Centered
+            Canvas.SetBottom(buttonDelete, 50);
+            buttonDelete.SetValue(Button.TemplateProperty, GetRoundButtonTemplate(buttonDelete));
 
 
-			// Create the Save button
-			Button buttonSave = new Button();
-			buttonSave.Name = "ButtonSave";
-			buttonSave.Content = "Save";
-			buttonSave.Height = 40;
-			buttonSave.Width = 50;
-			buttonSave.FontSize = 20;
-			buttonSave.Click += ButtonSave_Click;
-			Canvas.SetLeft(buttonSave, (MainCanvas.ActualWidth - buttonPrint.Width) / 2 - 75); // Centered
-			Canvas.SetBottom(buttonSave, 50);
 
-			// Create the Delete button
-			Button buttonDelete = new Button();
-			buttonDelete.Name = "ButtonDelete";
-			buttonDelete.Content = "Delete";
-			buttonDelete.Height = 40;
-			buttonDelete.Width = 70;
-			buttonDelete.FontSize = 20;
-			buttonDelete.Click += ButtonDelete_Click;
-			Canvas.SetLeft(buttonDelete, (MainCanvas.ActualWidth - buttonPrint.Width) / 2 + 75); // Centered
-			Canvas.SetBottom(buttonDelete, 50);
-
-
-			// Add the buttons to the canvas
-			MainCanvas.Children.Add(buttonPrint);
+            // Add the buttons to the canvas
+            MainCanvas.Children.Add(buttonPrint);
 			MainCanvas.Children.Add(buttonSave);
 			MainCanvas.Children.Add(buttonDelete);
 
 			SetCanvasSize();
 		}
 
-		public void DisplayImage(string imagePath)
+        private ControlTemplate GetRoundButtonTemplate(Button button)
+        {
+            ControlTemplate template = new ControlTemplate(typeof(Button));
+
+            FrameworkElementFactory borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.Name = "border";
+            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(button.Width / 2));
+            borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(BackgroundProperty));
+
+            FrameworkElementFactory contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            borderFactory.AppendChild(contentPresenterFactory);
+
+            template.VisualTree = borderFactory;
+            return template;
+        }
+
+        public void DisplayImage(string imagePath)
 		{
 			photoBoothLib.configLoader = configLoader;
 			ImagePath = imagePath;

@@ -9,6 +9,25 @@
     
     <Window.Resources>
         <local:SplitValueIn3 x:Key="SplitValueIn3" />
+        <Style x:Key="TransparentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="AliceBlue"/>
+            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
 
@@ -33,27 +52,13 @@
             <Grid.RenderTransform>
                 <ScaleTransform ScaleX="-1" />
             </Grid.RenderTransform>
-            <Button x:Name="TakePictureButton" Width="100" Height="100" Click="TakePictureButton_Click" Grid.Row="2" Grid.Column="1">
-                <Button.Resources>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Grid>
-                                        <Image Source="/Resources/CameraButton.png" Stretch="Uniform"/>
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Grid>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Resources>
-            </Button>
-           
+            <Border x:Name="BorderText" Background="#80808080" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                <TextBlock Text="Bildschirm berühren" FontSize="60" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Border>
             <TextBlock x:Name="TextBlockCountdown" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextAlignment="Center"  FontSize="150"/>
-
         </Grid>
+        <Button x:Name="TakePictureButton" Style="{StaticResource TransparentButtonStyle}" Height="1200" Width="2000" Background="Transparent" Click="TakePictureButton_Click" Canvas.Left="-200" Canvas.Top="-108" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+
     </Canvas>
 
 
