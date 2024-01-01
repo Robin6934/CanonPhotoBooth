@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Windows;
 using System.Text.Json;
+using System.Threading;
 
 namespace PhotoBooth
 {
     internal class RestApiMethods
     {
+
+        private static CancellationTokenSource? cancellationTokenSource;
 
         public static async void Init()
         {
@@ -19,9 +22,11 @@ namespace PhotoBooth
 
         public static async Task PolingForPictureTrigger(MainWindow mainWindow, string dir)
         {
+            cancellationTokenSource = new CancellationTokenSource();
+
             await Task.Run(async () =>
             {
-                while(true)
+                while(!cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     // Perform the GET request asynchronously
                     using HttpResponseMessage response =  await RestApi.RestApiGetReturn("http://localhost:6969/PhotoBoothCommunication/Poling");
@@ -49,7 +54,7 @@ namespace PhotoBooth
                         });
                     }
 
-                    await Task.Delay(1000);
+                    await Task.Delay(1000,cancellationTokenSource.Token);
                 }
                 
             });
@@ -59,6 +64,11 @@ namespace PhotoBooth
         {
             // Perform the GET request asynchronously
             await PolingForPictureTrigger(mainWindow, dir);
+        }
+
+        public static void StopPolingForPicture()
+        {
+            cancellationTokenSource?.Cancel();
         }
     }
 }

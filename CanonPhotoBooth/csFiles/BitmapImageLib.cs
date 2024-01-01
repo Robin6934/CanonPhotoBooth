@@ -48,7 +48,7 @@ namespace PhotoBooth
             byte averageBlue = (byte)(totalBlue / pixelCount);
 
             // Step 4: Determine whether the average color is too dark based on a threshold
-            const int darknessThreshold = 192; // Adjust as needed
+            const int darknessThreshold = 128; // Adjust as needed
 
             // Step 5: Set the boolean value accordingly
             return averageRed < darknessThreshold && averageGreen < darknessThreshold && averageBlue < darknessThreshold;

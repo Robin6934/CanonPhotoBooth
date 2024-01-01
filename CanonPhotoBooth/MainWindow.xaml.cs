@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define Dev
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -22,9 +23,7 @@ using static PhotoBooth.PhotoBoothLib;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using System.IO.Pipes;
 using System.Runtime.CompilerServices;
-
 
 namespace PhotoBooth
 {
@@ -83,13 +82,11 @@ namespace PhotoBooth
 				
                 InitializeComponent();
 
-				config = new ConfigLoader();
-
+                config = new ConfigLoader();
+                _ = PowerStatusWatcher.StartDCWatcher();
                 InitJsonReader();
 
                 CountDown = config.countDown;
-
-                RestApiMethods.Init();
 
                 CreateFilePaths(dir);
 
@@ -105,24 +102,28 @@ namespace PhotoBooth
 
 				RefreshCamera();
 
-				if (MainCamera == null) return;
+				if (MainCamera is null) return;
 
 				InitTimer();
 
 				InitWindow();
 				
-				MainCamera.OpenSession();
+				MainCamera?.OpenSession();
 
-				MainCamera.LiveViewUpdated += MainCamera_LiveViewUpdated;
+                MainCamera.LiveViewUpdated += MainCamera_LiveViewUpdated;
 
 				MainCamera.SetSetting(PropertyID.SaveTo, (int)SaveTo.Both);
 
 				MainCamera.SetCapacity(4096, int.MaxValue);
 
 				StartLV();
+#if !Dev
+				_ = PowerStatusWatcher.StartDCWatcher();
 
-				RestApiMethods.StartPolingForPicture(this, dir);
+                RestApiMethods.Init();
 
+                RestApiMethods.StartPolingForPicture(this, dir);
+#endif
                 SetCanvasSize();				
 			}
 			catch (DllNotFoundException) { ReportError("Canon DLLs not found!"); }
@@ -148,7 +149,7 @@ namespace PhotoBooth
         private void InitJsonReader()
         {
 
-            string absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
+            string? absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
 
 			string FileName = System.IO.Path.GetFileName(absolutePath);
 
@@ -158,7 +159,7 @@ namespace PhotoBooth
 
             fileSystemWatcherConfigFile = new FileSystemWatcher();
 
-            fileSystemWatcherConfigFile.Path = absolutePath;
+            fileSystemWatcherConfigFile.Path = absolutePath ?? "";
 
 			fileSystemWatcherConfigFile.Filter = FileName;
 
@@ -254,7 +255,7 @@ namespace PhotoBooth
 			}));
         }
 
-        #region Initialisations
+		#region Initialisations
 
 
         /// <summary>
@@ -262,9 +263,11 @@ namespace PhotoBooth
         /// </summary>
         private void InitWindow()
 		{
-			//this.WindowState = WindowState.Maximized;
-			//this.WindowStyle = WindowStyle.None;
-			//this.ResizeMode = ResizeMode.NoResize;
+#if !Dev
+			this.WindowState = WindowState.Maximized;
+			this.WindowStyle = WindowStyle.None;
+			this.ResizeMode = ResizeMode.NoResize;
+#endif
 			// Subscribe to the PreviewKeyDown event
 			this.PreviewKeyDown += MainWindow_PreviewKeyDown;
 
@@ -274,7 +277,6 @@ namespace PhotoBooth
 
 			this.SizeChanged += MainWindow_SizeChanged;
 			this.Closing += Window_Closing;
-			this.Loaded += MainWindow_Loaded;
 		}
 
 		/// <summary>
@@ -290,7 +292,7 @@ namespace PhotoBooth
 			KeepAliveTimer.Start();
 		}
 
-		#endregion
+#endregion
 
 		#region LiveView
 
@@ -445,8 +447,10 @@ namespace PhotoBooth
 
 			await Task.Delay(100);
 
-			if(BitmapImageLib.BitmapImageIsTooDark(CheckColorImage)){ TextBlockCountdown.Foreground = Brushes.White; }
-			else { TextBlockCountdown.Foreground = Brushes.Black; }
+            //if(BitmapImageLib.BitmapImageIsTooDark(CheckColorImage)){ TextBlockCountdown.Foreground = Brushes.White; }
+            //else { TextBlockCountdown.Foreground = Brushes.Black; }
+
+            TextBlockCountdown.Foreground = Brushes.Red;
 
             TextBlockCountdown.Visibility = Visibility.Visible;
 			int CountDownTemp = CountDown + 1;
@@ -515,11 +519,6 @@ namespace PhotoBooth
 			LVCanvas.Height = canvasHeight;
 		}
 
-		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-            
-        }
-
 		/// <summary>
 		/// Eventlistener for closing of the Mainwindow, it will dispose the camera and tell the Spring application to shutdown
 		/// </summary>
@@ -534,6 +533,10 @@ namespace PhotoBooth
 				//Directory.Delete(dir+"\\Temp", true);
 				//Directory.Delete(dir + "\\ShowTemp", true);
 				MainCamera.LiveViewUpdated -= MainCamera_LiveViewUpdated;
+
+				PowerStatusWatcher.StopWatcher();
+
+				RestApiMethods.StopPolingForPicture();
 
 				await RestApi.RestApiGet("http://localhost:6969/PhotoBoothApi/Shutdown");
 			}

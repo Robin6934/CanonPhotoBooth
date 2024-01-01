@@ -51,7 +51,7 @@
                 </Button.Resources>
             </Button>
            
-            <TextBlock x:Name="TextBlockCountdown" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextAlignment="Center"  FontSize="200"/>
+            <TextBlock x:Name="TextBlockCountdown" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextAlignment="Center"  FontSize="150"/>
 
         </Grid>
     </Canvas>
