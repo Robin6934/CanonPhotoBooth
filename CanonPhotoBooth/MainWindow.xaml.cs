@@ -83,7 +83,9 @@ namespace PhotoBooth
                 InitializeComponent();
 
                 config = new ConfigLoader();
+
                 _ = PowerStatusWatcher.StartDCWatcher();
+
                 InitJsonReader();
 
                 CountDown = config.countDown;
