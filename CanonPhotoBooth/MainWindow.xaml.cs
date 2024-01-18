@@ -73,7 +73,11 @@ namespace PhotoBooth
 
 		bool saveImageForColorcheck = false;
 
-		#endregion
+        Polyline polyline = new Polyline();
+
+        DispatcherTimer CountDownTimer = new DispatcherTimer();
+
+        #endregion
 
         public MainWindow()
 		{
@@ -213,7 +217,9 @@ namespace PhotoBooth
 		{
 			BorderText.Visibility = Visibility.Hidden;
 
-			Debug.WriteLine("TakePictureButton Pressed");
+            DrawCircle(150, 50, Convert.ToInt32(LVCanvas.Width / 2), Convert.ToInt32(LVCanvas.Height / 2), CountDown);
+
+            Debug.WriteLine("TakePictureButton Pressed");
 
             TriggerPicture();
         }
@@ -294,7 +300,9 @@ namespace PhotoBooth
 			KeepAliveTimer.Tick += KeepAliveTimer_Tick;
 			KeepAliveTimer.Interval = TimeSpan.FromMinutes(1);
 			KeepAliveTimer.Start();
-		}
+
+            CountDownTimer.Tick += CountDownTimer_Tick;
+        }
 
 #endregion
 
@@ -362,13 +370,16 @@ namespace PhotoBooth
 			{
                 TextBlockCountdown.Visibility = Visibility.Hidden;
                 timer.Stop();
-				TakePicture();
 				TakePictureButton.Click += TakePictureButton_Click;
 				KeepAliveTimer.Start();
 				return;
             }
-			
-			TextBlockCountdown.Text = Timer.ToString();
+			else if(Timer == 1)
+			{
+                TakePicture();
+            }
+
+            TextBlockCountdown.Text = Timer.ToString();
 			Timer--;
 
 		}
@@ -551,6 +562,64 @@ namespace PhotoBooth
 			}
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
+
+        #endregion
+
+        #region Additional Elements
+
+        private void CountDownTimer_Tick(object? sender, EventArgs e)
+        {
+            if (polyline.Points.Count == 3)
+            {
+                CountDownTimer.Stop();
+                LVCanvas.Children.Remove(polyline);
+                return;
+            }
+
+            polyline.Points.RemoveAt(polyline.Points.Count - 1);
+        }
+
+        public void DrawCircle(int circumference, int strokeThickness, int x, int y, int duration)
+        {
+            int Points = 180;
+
+            System.Windows.Point point = new System.Windows.Point();
+
+            for (int i = 0; i < Points; i++)
+            {
+                double angle = i * 2 * Math.PI / Points;
+
+                point.X = Math.Cos(angle) * circumference;
+                point.Y = Math.Sin(angle) * circumference;
+
+                polyline.Points.Add(point);
+            }
+
+            //polyline.Points.Add(new Point(0,0));
+
+            //polyline.Fill = Brushes.Black;
+
+            polyline.Stroke = Brushes.Black;
+
+            polyline.StrokeThickness = strokeThickness;
+
+			ScaleTransform transform = new ScaleTransform();
+
+			transform.ScaleX = -1;
+
+			polyline.RenderTransform = transform;
+
+			//polyline.RenderTransformOrigin = new System.Windows.Point(-0.5,0.5);
+
+            Canvas.SetLeft(polyline, x);
+            Canvas.SetTop(polyline, y);
+
+            LVCanvas.Children.Add(polyline);
+
+            CountDownTimer.Interval = TimeSpan.FromMilliseconds((double)duration / Points * 1000 + 2);
+
+            CountDownTimer.Start();
+        }
 
         #endregion
     }
