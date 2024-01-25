@@ -9,6 +9,13 @@ namespace PhotoBooth
 {
     internal class ImageDownsampler
     {
+        /// <summary>
+        /// Takes the specified image and downsamples it with the specified division factor
+        /// </summary>
+        /// <param name="sourcePath">Path of the image to be downscaled</param>
+        /// <param name="destinationPath">Path to save the downscaled image to</param>
+        /// <param name="divisionFactor">Factor by which the old images resolution is divided by</param>
+        /// <returns>Task of the downscaler</returns>
         public static async Task DownsampleImageAspectRatioAsync(string sourcePath, string destinationPath, double divisionFactor)
         {
             await Task.Run(() =>

@@ -7,8 +7,7 @@ namespace PhotoBooth
 {
 	public class ConfigLoader
 	{
-		private FileSystemWatcher _watcher = new FileSystemWatcher();
-        public int countDown { get; set; }
+		public int countDown { get; set; }
 		public string? textOnPicture { get; set; }
 		public string? textOnPictureFont { get; set; }
 		public int textOnPictureFontSize { get; set; }
@@ -38,39 +37,5 @@ namespace PhotoBooth
 				return null;
 			}
 		}
-
-		/*
-        private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
-        {
-            ReadJson(e.FullPath);
-        }
-
-        private void ReadJson(string jsonFilePath)
-        {
-            Application.Current.Dispatcher.Invoke(() => ((MainWindow)Application.Current.MainWindow).config = LoadFromJsonFile(jsonFilePath, (MainWindow)Application.Current.MainWindow));
-        }
-
-        public void InitJsonReader(string jsonFilePath)
-        {
-
-            string absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
-
-            string FileName = System.IO.Path.GetFileName(absolutePath);
-
-            absolutePath = System.IO.Path.GetDirectoryName(absolutePath);
-
-            ReadJson(jsonFilePath);
-
-            _watcher.Path = absolutePath;
-
-            _watcher.Filter = FileName;
-
-            _watcher.Changed += SettingsChangesHandler;
-
-            _watcher.NotifyFilter = NotifyFilters.LastWrite;
-
-            _watcher.EnableRaisingEvents = true;
-        }
-		*/
     }
 }

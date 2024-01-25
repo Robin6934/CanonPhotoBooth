@@ -31,13 +31,13 @@ namespace PhotoBooth
 
 		PhotoBoothLib photoBoothLib;
 
-		public PhotoPrintPage(MainWindow mainWindow)
+		public PhotoPrintPage()
 		{
 			InitializeComponent();
-			this.mainWindow = mainWindow;
+			mainWindow = (MainWindow)Application.Current.MainWindow;
 			this.WindowStyle = WindowStyle.None;
 			this.WindowState = WindowState.Maximized;
-            photoBoothLib = new PhotoBoothLib(mainWindow);
+            photoBoothLib = PhotoBoothLib.Instance;
         }
 
 		private void MainCanvas_Loaded(object sender, RoutedEventArgs e)
@@ -77,8 +77,6 @@ namespace PhotoBooth
             Canvas.SetLeft(buttonDelete, (MainCanvas.ActualWidth - buttonPrint.Width) / 2 + 180); // Centered
             Canvas.SetBottom(buttonDelete, 50);
             buttonDelete.SetValue(Button.TemplateProperty, GetRoundButtonTemplate(buttonDelete));
-
-
 
             // Add the buttons to the canvas
             MainCanvas.Children.Add(buttonPrint);

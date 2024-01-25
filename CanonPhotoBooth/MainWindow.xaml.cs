@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Runtime.CompilerServices;
+using Moq;
 
 namespace PhotoBooth
 {
@@ -55,10 +56,6 @@ namespace PhotoBooth
 
 		string CurrentPictureName = "";
 
-		DispatcherTimer timer = new DispatcherTimer();
-		int Timer = 0;
-		int CountDown = 4;
-
 		string jsonFilePath = "Resources\\config.json";
 
         public ConfigLoader config { get; set; }
@@ -77,22 +74,19 @@ namespace PhotoBooth
 
         DispatcherTimer CountDownTimer = new DispatcherTimer();
 
+		CountDown countDown;
+
         #endregion
 
         public MainWindow()
 		{
 			try
 			{
-				
                 InitializeComponent();
 
                 config = new ConfigLoader();
 
-                _ = PowerStatusWatcher.StartDCWatcher();
-
                 InitJsonReader();
-
-                CountDown = config.countDown;
 
                 CreateFilePaths(dir);
 
@@ -107,8 +101,6 @@ namespace PhotoBooth
 				SetImageAction = (BitmapImage img) => { bgbrush.ImageSource = img; };
 
 				RefreshCamera();
-
-				if (MainCamera is null) return;
 
 				InitTimer();
 
@@ -136,11 +128,6 @@ namespace PhotoBooth
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
-        private void MainWindow_Loaded1(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         private void SettingsChangesHandler(object sender, FileSystemEventArgs e)
         {
             ReadJson();
@@ -149,12 +136,10 @@ namespace PhotoBooth
         private void ReadJson()
 		{
 			config = ConfigLoader.LoadFromJsonFile(jsonFilePath, this);
-			CountDown = config.countDown;
 		}
 
         private void InitJsonReader()
         {
-
             string? absolutePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), jsonFilePath);
 
 			string FileName = System.IO.Path.GetFileName(absolutePath);
@@ -217,8 +202,6 @@ namespace PhotoBooth
 		{
 			BorderText.Visibility = Visibility.Hidden;
 
-            DrawCircle(150, 50, Convert.ToInt32(LVCanvas.Width / 2), Convert.ToInt32(LVCanvas.Height / 2), CountDown);
-
             Debug.WriteLine("TakePictureButton Pressed");
 
             TriggerPicture();
@@ -249,19 +232,18 @@ namespace PhotoBooth
 
 			string TempPath = dir+"\\ShowTemp\\"+imageName;
 
-			AddTextForPreview(imagePath, TempPath, config, this);
+			AddTextForPreview(imagePath, TempPath, config);
 
 			WaitForFileToUnlock(TempPath, TimeSpan.FromSeconds(10));
 
 			Dispatcher.Invoke((Action)(() =>
 			{
-				PhotoPrintPage imageViewerWindow = new PhotoPrintPage(this);
+				PhotoPrintPage imageViewerWindow = new PhotoPrintPage();
 				
                 imageViewerWindow.configLoader = config;
                 imageViewerWindow.DisplayImage(TempPath);
                 imageViewerWindow.Show();
-                
-					
+                	
 			}));
         }
 
@@ -281,37 +263,50 @@ namespace PhotoBooth
 			// Subscribe to the PreviewKeyDown event
 			this.PreviewKeyDown += MainWindow_PreviewKeyDown;
 
+            this.Loaded += MainWindow_Loaded;
+
 			// Set the window to focusable so that it can receive keyboard events
 			this.Focusable = true;
+
 			this.Focus();
 
 			this.SizeChanged += MainWindow_SizeChanged;
+
 			this.Closing += Window_Closing;
 		}
 
-		/// <summary>
-		/// Initialises the Timer for the Countdown and the KeepAliveTimer so the camera wont go to sleep
-		/// </summary>
-		private void InitTimer()
-		{
-			timer.Tick += Timer_Tick;
-			timer.Interval = TimeSpan.FromSeconds(1);
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Point point = new System.Windows.Point(
+                Convert.ToInt32(LVCanvas.Width / 2),
+                Convert.ToInt32(LVCanvas.Height / 2));
 
+            countDown = new CountDown(config.countDown, 1.0d, 200,
+                point, LVCanvas);
+
+            countDown.CountDownExpired += CountDown_CountDownExpired;
+
+            countDown.CountDownEarly += CountDown_CountDownEarly;
+        }
+
+        /// <summary>
+        /// Initialises the Timer for the Countdown and the KeepAliveTimer so the camera wont go to sleep
+        /// </summary>
+        private void InitTimer()
+		{
 			KeepAliveTimer.Tick += KeepAliveTimer_Tick;
 			KeepAliveTimer.Interval = TimeSpan.FromMinutes(1);
 			KeepAliveTimer.Start();
-
-            CountDownTimer.Tick += CountDownTimer_Tick;
         }
 
-#endregion
+        #endregion
 
-		#region LiveView
+        #region LiveView
 
-		/// <summary>
-		/// Start the Live view and set the background of the canvas to the LiveView
-		/// </summary>
-		private void StartLV()
+        /// <summary>
+        /// Start the Live view and set the background of the canvas to the LiveView
+        /// </summary>
+        private void StartLV()
 		{
 			try
 			{
@@ -348,7 +343,9 @@ namespace PhotoBooth
 					}
 
 					Application.Current.Dispatcher.BeginInvoke(SetImageAction, EvfImage);
-				}
+
+					GC.Collect();
+                }
 			}
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
@@ -357,33 +354,6 @@ namespace PhotoBooth
 		#endregion
 
 		#region EventListeners
-
-		/// <summary>
-		/// Eventlistener for the Timer, when the timer hits 0 it takes a picture
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void Timer_Tick(object sender, EventArgs e)
-		{
-
-			if (Timer == 0)
-			{
-                TextBlockCountdown.Visibility = Visibility.Hidden;
-                timer.Stop();
-				TakePictureButton.Click += TakePictureButton_Click;
-				KeepAliveTimer.Start();
-				return;
-            }
-			else if(Timer == 1)
-			{
-                TakePicture();
-            }
-
-            TextBlockCountdown.Text = Timer.ToString();
-			Timer--;
-
-		}
-
 		private void KeepAliveTimer_Tick(object sender, EventArgs e)
 		{
 			if (SecondTick)
@@ -438,22 +408,36 @@ namespace PhotoBooth
 				{
 					BorderText.Visibility = Visibility.Visible;
 				}));
-
-                //MainProgressBar.Dispatcher.Invoke((Action)delegate { MainProgressBar.Value = 0; });
             }
             catch (Exception ex) { ReportError(ex.Message); }
 		}
 
-		#endregion
 
-		#region CameraInteractions
-		
-		/// <summary>
-		/// Trigger the camera to take a picture staticly
-		/// </summary>
-		public static void TriggerPictureStatic()
+        private void CountDown_CountDownEarly()
+        {
+            TakePictureButton.Click += TakePictureButton_Click;
+
+            KeepAliveTimer.Start();
+
+			TakePicture();
+        }
+
+        private void CountDown_CountDownExpired()
+        {
+            //throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region CameraInteractions
+
+        /// <summary>
+        /// Trigger the camera to take a picture staticly
+        /// </summary>
+        public static void TriggerPictureStatic()
 		{
-            Application.Current.Dispatcher.Invoke(() => ((MainWindow)Application.Current.MainWindow).TriggerPicture());
+            Application.Current.Dispatcher.Invoke(() => 
+			((MainWindow)Application.Current.MainWindow).TriggerPicture());
         }
 
 		/// <summary>
@@ -465,19 +449,9 @@ namespace PhotoBooth
             KeepAliveTimer.Stop();
             MainCamera.DownloadReady += MainCamera_DownloadReady;
 
-			await Task.Delay(100);
+			countDown.StartCountdown();
 
-            //if(BitmapImageLib.BitmapImageIsTooDark(CheckColorImage)){ TextBlockCountdown.Foreground = Brushes.White; }
-            //else { TextBlockCountdown.Foreground = Brushes.Black; }
-
-            TextBlockCountdown.Foreground = Brushes.Red;
-
-            TextBlockCountdown.Visibility = Visibility.Visible;
-			int CountDownTemp = CountDown + 1;
-			TextBlockCountdown.Text = CountDownTemp.ToString();
-			Timer = CountDown;
 			TakePictureButton.Click -= TakePictureButton_Click;
-			timer.Start();
 		}
 
 		#endregion
@@ -562,64 +536,6 @@ namespace PhotoBooth
 			}
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
-
-        #endregion
-
-        #region Additional Elements
-
-        private void CountDownTimer_Tick(object? sender, EventArgs e)
-        {
-            if (polyline.Points.Count == 3)
-            {
-                CountDownTimer.Stop();
-                LVCanvas.Children.Remove(polyline);
-                return;
-            }
-
-            polyline.Points.RemoveAt(polyline.Points.Count - 1);
-        }
-
-        public void DrawCircle(int circumference, int strokeThickness, int x, int y, int duration)
-        {
-            int Points = 180;
-
-            System.Windows.Point point = new System.Windows.Point();
-
-            for (int i = 0; i < Points; i++)
-            {
-                double angle = i * 2 * Math.PI / Points;
-
-                point.X = Math.Cos(angle) * circumference;
-                point.Y = Math.Sin(angle) * circumference;
-
-                polyline.Points.Add(point);
-            }
-
-            //polyline.Points.Add(new Point(0,0));
-
-            //polyline.Fill = Brushes.Black;
-
-            polyline.Stroke = Brushes.Black;
-
-            polyline.StrokeThickness = strokeThickness;
-
-			ScaleTransform transform = new ScaleTransform();
-
-			transform.ScaleX = -1;
-
-			polyline.RenderTransform = transform;
-
-			//polyline.RenderTransformOrigin = new System.Windows.Point(-0.5,0.5);
-
-            Canvas.SetLeft(polyline, x);
-            Canvas.SetTop(polyline, y);
-
-            LVCanvas.Children.Add(polyline);
-
-            CountDownTimer.Interval = TimeSpan.FromMilliseconds((double)duration / Points * 1000 + 2);
-
-            CountDownTimer.Start();
-        }
 
         #endregion
     }

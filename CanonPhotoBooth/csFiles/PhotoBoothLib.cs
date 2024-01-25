@@ -17,23 +17,33 @@ namespace PhotoBooth
 {
 	internal class PhotoBoothLib
 	{
+
+		private static readonly Lazy<PhotoBoothLib> _instance = new Lazy<PhotoBoothLib> (() => new PhotoBoothLib());
+
 		string userName = Environment.UserName;
 		string basePath = "";
 		public ConfigLoader? configLoader { get; set; }
 		public MainWindow? mainWindow;
 
-		public PhotoBoothLib(MainWindow mainWindow) 
+		public PhotoBoothLib() 
 		{
-			this.mainWindow = mainWindow;
-		}
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+			this.mainWindow = 
+			(MainWindow)System.Windows.Application.Current.MainWindow);
 
+        }
 
+        public static PhotoBoothLib Instance { get { return _instance.Value; } }
+
+        /// <summary>
+        /// Can either Save, Print then Save or Delete the Picture
+        /// </summary>
+        /// <param name="CurrentPicturePath">The Path of the Picture to be used</param>
+        /// <param name="Option">Enum to Specify what to do with the picture</param>
         public async void doPhotoboxThings(string CurrentPicturePath, PictureOptions Option)
 		{
 			string fileName = Path.GetFileName(CurrentPicturePath);
 			string destinationPath = "";
-
-			char[] charArray = fileName.ToCharArray();
 
             basePath = mainWindow.dir;
 
@@ -64,18 +74,22 @@ namespace PhotoBooth
 				destinationPath = $"{basePath}\\Deleted\\{fileName}";
 				CopyPictureTo(sourcePath, destinationPath);
 				return;
-				
 			}
 
 			CopyPictureTo(destinationPath, $"{basePath}\\Static\\{fileName}");
 
-			await ImageDownsampler.DownsampleImageAspectRatioAsync(destinationPath, $"{basePath}\\Static\\downscaled{fileName}",4);
+            await ImageDownsampler.DownsampleImageAspectRatioAsync(destinationPath, $"{basePath}\\Static\\downscaled{fileName}",4);
 
         }
 
 
-
-		public static async Task PrintImageAsync(string imagePath)
+        /// <summary>
+        /// Sends the picture to the Standart Printer specified in the print settings
+        /// of your computer
+        /// </summary>
+        /// <param name="imagePath">Path of the picture to be printet</param>
+        /// <returns></returns>
+        public static async Task PrintImageAsync(string imagePath)
 		{
 			await Task.Run(() =>
 			{
@@ -88,22 +102,30 @@ namespace PhotoBooth
                         float width = e.PageSettings.PrintableArea.Width;
                         float height = e.PageSettings.PrintableArea.Height;
                         e.Graphics.DrawImage(image, 0, 0, height, width);
-
                     };
-
                     pd.Print();
                 }
-				
 			});
 		}
 
-		public static void AddTextForPreview(string ImagePath, string SavePath, ConfigLoader configLoader, MainWindow mainWindow)
+		/// <summary>
+		/// Adds te
+		/// </summary>
+		/// <param name="ImagePath"></param>
+		/// <param name="SavePath"></param>
+		/// <param name="configLoader"></param>
+		public static void AddTextForPreview(string ImagePath, string SavePath, ConfigLoader configLoader)
 		{
-			PhotoBoothLib photoBoothLib = new PhotoBoothLib(mainWindow);
+			PhotoBoothLib photoBoothLib = Instance;
 			photoBoothLib.configLoader = configLoader;
 			photoBoothLib.AddTextToImage(ImagePath, SavePath);
 		}
 
+		/// <summary>
+		/// Adds the text to the image like specified in the config
+		/// </summary>
+		/// <param name="ImagePath">Path to the image to which the text should be added</param>
+		/// <param name="SavePath">Path to save the image with added text to</param>
 		public void AddTextToImage(string ImagePath,string SavePath)
 		{
 			// Load the image
@@ -136,8 +158,11 @@ namespace PhotoBooth
 			bitmap.Save(SavePath);
 		}
 
-
-		public static void CreateFilePaths(string basePath)
+        /// <summary>
+        /// Checks if all the needed directories exist else creates them
+        /// </summary>
+        /// <param name="basePath">the base path where to create the paths in</param>
+        public static void CreateFilePaths(string basePath)
 		{
 			string[] paths = { "Photos", "Deleted", "Temp" , "ShowTemp", "Static" };
 			foreach (string path in paths)
