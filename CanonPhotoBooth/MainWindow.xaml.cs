@@ -1,30 +1,20 @@
 ﻿#define Dev
+#define MockedCamera
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Text.Json;
 using EOSDigital.API;
 using EOSDigital.SDK;
-using PhotoBooth;
 using static PhotoBooth.PhotoBoothLib;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Threading;
-using System.Runtime.CompilerServices;
-using Moq;
+using EDSKLib.API;
 
 namespace PhotoBooth
 {
@@ -37,8 +27,13 @@ namespace PhotoBooth
 		#region Variables
 
 		CanonAPI APIHandler;
-		Camera MainCamera;
-		List<Camera> CamList;
+#if MockedCamera
+        ICamera MainCamera;
+#else
+        Camera MainCamera;
+#endif
+
+        List<Camera> CamList;
 
 		FocusInfo FocInfo;
 
@@ -76,7 +71,7 @@ namespace PhotoBooth
 
 		CountDown countDown;
 
-        #endregion
+#endregion
 
         public MainWindow()
 		{
@@ -102,7 +97,12 @@ namespace PhotoBooth
 
 				RefreshCamera();
 
-				InitTimer();
+				if(MainCamera == null)
+                {
+                    MainCamera = new MockedCamera();
+                }
+
+                InitTimer();
 
 				InitWindow();
 				
@@ -247,7 +247,7 @@ namespace PhotoBooth
 			}));
         }
 
-		#region Initialisations
+        #region Initialisations
 
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace PhotoBooth
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="img"></param>
-		private void MainCamera_LiveViewUpdated(Camera sender, Stream img)
+		private void MainCamera_LiveViewUpdated(ICamera sender, Stream img)
 		{
 			try
 			{
@@ -343,17 +343,15 @@ namespace PhotoBooth
 					}
 
 					Application.Current.Dispatcher.BeginInvoke(SetImageAction, EvfImage);
-
-					GC.Collect();
                 }
 			}
 			catch (Exception ex) { ReportError(ex.Message); }
 		}
 
 
-		#endregion
+        #endregion
 
-		#region EventListeners
+        #region EventListeners
 		private void KeepAliveTimer_Tick(object sender, EventArgs e)
 		{
 			if (SecondTick)
@@ -383,13 +381,13 @@ namespace PhotoBooth
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="Info"></param>
-		private void MainCamera_DownloadReady(Camera sender, DownloadInfo Info)
+		private void MainCamera_DownloadReady(ICamera sender, DownloadInfo Info)
 		{
             MainCamera.DownloadReady -= MainCamera_DownloadReady;
 
             string DownloadDir = dir + "\\Temp\\";
 
-            string fileName = Info.FileName;
+            string fileName = System.IO.Path.GetFileName(Info.FileName);
 			
 			string TotalPath = System.IO.Path.Combine(DownloadDir, fileName);
 
@@ -397,7 +395,7 @@ namespace PhotoBooth
 			{
 				//settings.SavePathTextBox.Dispatcher.Invoke((Action)delegate { dir = settings.SavePathTextBox.Text; });
 				sender.DownloadFile(Info, DownloadDir);
-                
+
                 CurrentPictureName = fileName;
 
                 WaitForFileToUnlock(TotalPath, TimeSpan.FromSeconds(10));
@@ -411,7 +409,6 @@ namespace PhotoBooth
             }
             catch (Exception ex) { ReportError(ex.Message); }
 		}
-
 
         private void CountDown_CountDownEarly()
         {
@@ -454,9 +451,9 @@ namespace PhotoBooth
 			TakePictureButton.Click -= TakePictureButton_Click;
 		}
 
-		#endregion
+        #endregion
 
-		#region ErrorHandling
+        #region ErrorHandling
 
 		/// <summary>
 		/// Shows an error message in a MessageBox
@@ -483,9 +480,9 @@ namespace PhotoBooth
 			ReportError(ex.Message);
 		}
 
-		#endregion
+        #endregion
 
-		#region WindowSize and Closing
+        #region WindowSize and Closing
 
 		/// <summary>
 		/// Eventlistener for when the window size changes, it will update the canvas size

@@ -5,13 +5,14 @@ using EOSDigital.SDK;
 using FileAccess = EOSDigital.SDK.FileAccess;
 using System.Collections.Generic;
 using System.Linq;
+using EDSKLib.API;
 
 namespace EOSDigital.API
 {
     /// <summary>
     /// Represents a physical camera and provides methods to control it
     /// </summary>
-    public class Camera : IDisposable
+    public class Camera : IDisposable, ICamera
     {
         #region Events
 

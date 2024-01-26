@@ -61,6 +61,10 @@ namespace EOSDigital.API
             if (ext == ".crw" || ext == ".cr2") IsRAW = true;
             else IsRAW = false;
         }
+
+        public DownloadInfo()
+        {
+        }
     }
 
     /// <summary>

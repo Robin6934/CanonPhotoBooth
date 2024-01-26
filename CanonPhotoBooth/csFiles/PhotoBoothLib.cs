@@ -21,9 +21,12 @@ namespace PhotoBooth
 		private static readonly Lazy<PhotoBoothLib> _instance = new Lazy<PhotoBoothLib> (() => new PhotoBoothLib());
 
 		string userName = Environment.UserName;
+
 		string basePath = "";
-		public ConfigLoader? configLoader { get; set; }
-		public MainWindow? mainWindow;
+
+		private ConfigLoader? _configLoader;
+
+		private MainWindow? mainWindow;
 
 		public PhotoBoothLib() 
 		{
@@ -31,6 +34,7 @@ namespace PhotoBooth
 			this.mainWindow = 
 			(MainWindow)System.Windows.Application.Current.MainWindow);
 
+			_configLoader = ConfigLoader.Instance;
         }
 
         public static PhotoBoothLib Instance { get { return _instance.Value; } }
@@ -117,7 +121,7 @@ namespace PhotoBooth
 		public static void AddTextForPreview(string ImagePath, string SavePath, ConfigLoader configLoader)
 		{
 			PhotoBoothLib photoBoothLib = Instance;
-			photoBoothLib.configLoader = configLoader;
+			photoBoothLib._configLoader = configLoader;
 			photoBoothLib.AddTextToImage(ImagePath, SavePath);
 		}
 
@@ -134,21 +138,21 @@ namespace PhotoBooth
 
 			// Define text color
 			ColorConverter colorConverter = new ColorConverter();
-			Color color = (Color)colorConverter.ConvertFromString(configLoader.textOnPictureColor);
+			Color color = (Color)colorConverter.ConvertFromString(_configLoader.textOnPictureColor);
 			Brush brush = new SolidBrush(color);
 
 			// Define text font
-			Font font = new Font(configLoader.textOnPictureFont, configLoader.textOnPictureFontSize, FontStyle.Regular);
+			Font font = new Font(_configLoader.textOnPictureFont, _configLoader.textOnPictureFontSize, FontStyle.Regular);
 
 			// Text to display
-			string text = configLoader.textOnPicture;
+			string text = _configLoader.textOnPicture;
 
 			// Measure the size of the text
 			SizeF textSize = graphics.MeasureString(text, font);
 
 			// Define rectangle based on text size
-			float x = bitmap.Width - textSize.Width - configLoader.textPositionFromRight;
-			float y = bitmap.Height - textSize.Height - configLoader.textPositionFromBottom;
+			float x = bitmap.Width - textSize.Width - _configLoader.textPositionFromRight;
+			float y = bitmap.Height - textSize.Height - _configLoader.textPositionFromBottom;
 			RectangleF rectangle = new RectangleF(new PointF(x, y), textSize);
 
 			// Draw text on image

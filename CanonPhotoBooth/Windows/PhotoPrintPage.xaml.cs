@@ -25,19 +25,19 @@ namespace PhotoBooth
 
 		public ConfigLoader? configLoader { get; set;}
 
-        private bool disposed = false;
+        private bool _disposed = false;
 
-		private MainWindow mainWindow;
-
-		PhotoBoothLib photoBoothLib;
+		private PhotoBoothLib _photoBoothLib;
 
 		public PhotoPrintPage()
 		{
 			InitializeComponent();
-			mainWindow = (MainWindow)Application.Current.MainWindow;
+
 			this.WindowStyle = WindowStyle.None;
+
 			this.WindowState = WindowState.Maximized;
-            photoBoothLib = PhotoBoothLib.Instance;
+
+            _photoBoothLib = PhotoBoothLib.Instance;
         }
 
 		private void MainCanvas_Loaded(object sender, RoutedEventArgs e)
@@ -107,7 +107,6 @@ namespace PhotoBooth
 
         public void DisplayImage(string imagePath)
 		{
-			photoBoothLib.configLoader = configLoader;
 			ImagePath = imagePath;
 			this.SizeChanged += PhotoPrintPage_SizeChanged;
 
@@ -137,19 +136,19 @@ namespace PhotoBooth
 
 		private void ButtonSave_Click(object sender, RoutedEventArgs e)
 		{
-			photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Save); // Call the method on the instance
+			_photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Save); // Call the method on the instance
 			Close();
         }
 
         private void ButtonPrint_Click(object sender, RoutedEventArgs e)
 		{
-			photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Print); // Call the method on the instance
+			_photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Print); // Call the method on the instance
 			Close();
         }
 
         private void ButtonDelete_Click(object sender, RoutedEventArgs e)
 		{
-			photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Delete); // Call the method on the instance
+			_photoBoothLib.doPhotoboxThings(ImagePath, PhotoBoothLib.PictureOptions.Delete); // Call the method on the instance
 			Close();
 		}
 
@@ -176,7 +175,7 @@ namespace PhotoBooth
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -200,7 +199,7 @@ namespace PhotoBooth
 
                 // Release unmanaged resources here, if any.
 
-                disposed = true;
+                _disposed = true;
             }
         }
 

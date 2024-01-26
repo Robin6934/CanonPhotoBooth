@@ -7,7 +7,17 @@ namespace PhotoBooth
 {
 	public class ConfigLoader
 	{
-		public int countDown { get; set; }
+        private static readonly Lazy<ConfigLoader> _instance = new Lazy<ConfigLoader>(() => new ConfigLoader());
+
+        public static ConfigLoader Instance
+        {
+            get
+            {
+                return _instance.Value;
+            }
+        }
+
+        public int countDown { get; set; }
 		public string? textOnPicture { get; set; }
 		public string? textOnPictureFont { get; set; }
 		public int textOnPictureFontSize { get; set; }
